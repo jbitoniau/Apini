@@ -262,14 +262,13 @@ function TelemetryServer()
 		{
 			var path = url.parse(req.url).pathname;
 			var query = url.parse(req.url).query; 
-
-			if ( path==='/') 
-			{
-				TelemetryServer._serveFile( 'TelemetryViewer.html', res );
-			}
-			else if ( path.indexOf('/files/')===0 )
+			if ( path.indexOf('/')===0 )
 			{
 				var filename = path.substr(1);
+				if ( filename.length===0 )
+				{
+					filename = 'TelemetryViewer.html';
+				}
 				TelemetryServer._serveFile( filename, res );
 			}
 			else
@@ -367,6 +366,8 @@ TelemetryServer._serveFile = function( filename, res )
 	}
 	console.log("Serving file: " + filename + " as " + contentType);
 
+	filename = 'client/' + filename;
+	
 	fs.readFile(filename, 'utf8', 
 		function(err, data) 
 			{
