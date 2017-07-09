@@ -149,15 +149,6 @@ function TelemetryViewer( canvas )
     
     this._onSocketCloseHandler = this._onSocketClose.bind(this);
     this._socket.addEventListener( "close", this._onSocketCloseHandler );
-  
-setInterval( 
-    function()
-    {
-        this._socket.send( JSON.stringify({
-          to: "client2",
-          data: "foo"
-        }) );
-    }.bind(this), 3000 );
 
     this._onConnectionOpen = null;
     this._onConnectionError = null;
@@ -171,6 +162,25 @@ setInterval(
     this._graphOptions.yPropertyName = this._graphDataType;
   
     this._onGraphDataTypeChanged = null;
+
+
+// TEST!
+var gamepadFlightControlsProvider = new GamepadFlightControlsProvider();
+setInterval( 
+    function()
+    {
+        gamepadFlightControlsProvider.update();
+        var flightControls = gamepadFlightControlsProvider.flightControls;
+        var t = MathExtra.roundValueTo(flightControls.throttle,0.01);
+        var r = MathExtra.roundValueTo(flightControls.rudder,0.01);
+        console.log( "t:" + t + " r:" + r );
+               
+        if ( this._socket.readyState===1 )
+        {
+            this._socket.send( JSON.stringify({t:t, r:r}) );
+        }
+    }.bind(this), 20);
+// TEST!
 }
 
 TelemetryViewer.prototype.dispose = function()
