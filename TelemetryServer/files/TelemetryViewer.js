@@ -1,6 +1,6 @@
 'use strict';
 
-function SensorMonitor( canvas )
+function TelemetryViewer( canvas )
 {
     this._canvas = canvas;
 
@@ -173,7 +173,7 @@ setInterval(
     this._onGraphDataTypeChanged = null;
 }
 
-SensorMonitor.prototype.dispose = function()
+TelemetryViewer.prototype.dispose = function()
 {
     this._socket.removeEventListener( "open", this._onSocketOpenHandler );
     this._socket.removeEventListener( "message", this._onSocketMessageHandler );
@@ -181,12 +181,12 @@ SensorMonitor.prototype.dispose = function()
     this._socket.close();
 };
 
-SensorMonitor.prototype.getAutoscroll = function()
+TelemetryViewer.prototype.getAutoscroll = function()
 {
     return this._autoscroll;
 };
 
-SensorMonitor.prototype.setAutoscroll = function( autoscroll )
+TelemetryViewer.prototype.setAutoscroll = function( autoscroll )
 {
     if ( this._autoscroll===autoscroll )
         return;
@@ -203,12 +203,12 @@ SensorMonitor.prototype.setAutoscroll = function( autoscroll )
         this._onAutoscrollChanged();
 };
 
-SensorMonitor.prototype.getGraphDataType = function()
+TelemetryViewer.prototype.getGraphDataType = function()
 {
     return this._graphDataType;
 };
 
-SensorMonitor.prototype.setGraphDataType = function( graphDataType )
+TelemetryViewer.prototype.setGraphDataType = function( graphDataType )
 {
     if ( graphDataType===this._graphDataType )
         return;
@@ -235,7 +235,7 @@ SensorMonitor.prototype.setGraphDataType = function( graphDataType )
 };
 
 
-SensorMonitor.prototype._onSocketOpen = function( /*??*/ )
+TelemetryViewer.prototype._onSocketOpen = function( /*??*/ )
 {
     this._isConnected = true;
     //this._socket.send('hello from the client');
@@ -244,7 +244,7 @@ SensorMonitor.prototype._onSocketOpen = function( /*??*/ )
 };
 
 var i=0;
-SensorMonitor.prototype._onSocketMessage = function( message )
+TelemetryViewer.prototype._onSocketMessage = function( message )
 {
 
 if ( i%10 )
@@ -277,21 +277,21 @@ i++;
     this._render();
 };
 
-SensorMonitor.prototype._onSocketError = function(error)
+TelemetryViewer.prototype._onSocketError = function(error)
 {
     if ( this._onConnectionError )
         this._onConnectionError();
     alert('WebSocket error: ' + error);
 };
 
-SensorMonitor.prototype._onSocketClose = function( /*??*/ )
+TelemetryViewer.prototype._onSocketClose = function( /*??*/ )
 {
     this._isConnected = false;
     if ( this._onConnectionClose )
         this._onConnectionClose();
 };
 
-SensorMonitor.prototype._render = function()
+TelemetryViewer.prototype._render = function()
 {
     if ( this._autoscroll )
        this._scrollToLatestData();
@@ -299,7 +299,7 @@ SensorMonitor.prototype._render = function()
     GraphDataPresenter.render( this._canvas, this._graphData, this._graphDataWindow, this._graphOptions );
 };
 
-SensorMonitor.prototype._onGraphDataWindowChange = function( prevGraphDataWindow )
+TelemetryViewer.prototype._onGraphDataWindowChange = function( prevGraphDataWindow )
 {
     if ( this.getAutoscroll() )
     {
@@ -312,7 +312,7 @@ SensorMonitor.prototype._onGraphDataWindowChange = function( prevGraphDataWindow
 
 // Change the x position of the graph data window to show the latest data points.
 // This method doesn't affect the other graph data window properties.
-SensorMonitor.prototype._scrollToLatestData = function()
+TelemetryViewer.prototype._scrollToLatestData = function()
 {
     var graphData = this._graphData;
     if ( graphData.length===0 )

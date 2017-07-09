@@ -236,9 +236,9 @@ SensorDataSender.prototype._sendData = function()
 
 
 /*
-	SensorMonitorServer
+	TelemetryServer
 */
-function SensorMonitorServer()
+function TelemetryServer()
 {
 	// Create UDP socket for discussing with the C++ SensorSender companion program
 	var udpSocket = dgram.createSocket('udp4');
@@ -265,16 +265,16 @@ function SensorMonitorServer()
 
 			if ( path==='/') 
 			{
-				SensorMonitorServer._serveFile( 'SensorMonitor.html', res );
+				TelemetryServer._serveFile( 'TelemetryViewer.html', res );
 			}
 			else if ( path.indexOf('/files/')===0 )
 			{
 				var filename = path.substr(1);
-				SensorMonitorServer._serveFile( filename, res );
+				TelemetryServer._serveFile( filename, res );
 			}
 			else
 			{
-				SensorMonitorServer._createHTMLErrorResponse( res, 404, "Page not found");
+				TelemetryServer._createHTMLErrorResponse( res, 404, "Page not found");
 			}
 		});
 	this._httpServer.listen(8080, 
@@ -325,14 +325,14 @@ connection.on('message',
 	console.log("Websocket server created");
 }
 
-SensorMonitorServer.prototype.dispose = function()
+TelemetryServer.prototype.dispose = function()
 {
 	// Stop things here!
 	console.log("dispose to implement here...")
 };
 
 
-SensorMonitorServer._getFilenameExtension = function( filename )
+TelemetryServer._getFilenameExtension = function( filename )
 {
 	var parts = filename.split('.');
 	if ( parts.length>1 )
@@ -342,10 +342,10 @@ SensorMonitorServer._getFilenameExtension = function( filename )
 	return "";
 };
 
-SensorMonitorServer._getFileContentType = function( filename )
+TelemetryServer._getFileContentType = function( filename )
 {
 	var contentType = null;
-	var extension = SensorMonitorServer._getFilenameExtension( filename ).toLowerCase();
+	var extension = TelemetryServer._getFilenameExtension( filename ).toLowerCase();
 	switch ( extension )
 	{
 		case 'html': 
@@ -356,9 +356,9 @@ SensorMonitorServer._getFileContentType = function( filename )
 	return null;
 };
 
-SensorMonitorServer._serveFile = function( filename, res )
+TelemetryServer._serveFile = function( filename, res )
 {
-	var contentType = SensorMonitorServer._getFileContentType(filename);
+	var contentType = TelemetryServer._getFileContentType(filename);
 	if ( !contentType )
 	{
 		console.warn("Serving file: " + filename + ". Unsupported file/content type");
@@ -372,7 +372,7 @@ SensorMonitorServer._serveFile = function( filename, res )
 			{
 		  		if ( err ) 
 		  		{
-		    		SensorMonitorServer._createHTMLErrorResponse( res, 500, err );
+		    		TelemetryServer._createHTMLErrorResponse( res, 500, err );
 		  		}
 		  		else
 		  		{
@@ -383,7 +383,7 @@ SensorMonitorServer._serveFile = function( filename, res )
 			});
 };
 
-SensorMonitorServer._createHTMLErrorResponse = function( res, code, message )
+TelemetryServer._createHTMLErrorResponse = function( res, code, message )
 {
 	res.writeHead(code, {"content-type": "text/html"});
 	res.write(
@@ -405,7 +405,7 @@ SensorMonitorServer._createHTMLErrorResponse = function( res, code, message )
 */
 function Main()
 {
-	var sensorMonitorServer = new SensorMonitorServer();
+	var telemetryServer = new TelemetryServer();
 
 	//http://stackoverflow.com/questions/10021373/what-is-the-windows-equivalent-of-process-onsigint-in-node-js/14861513#14861513
 	//http://stackoverflow.com/questions/6958780/quitting-node-js-gracefully
@@ -424,7 +424,7 @@ function Main()
 	process.on("SIGINT", function () 
 		{
 			console.log("Stopping server...");
-			sensorMonitorServer.dispose();
+			telemetryServer.dispose();
 			process.exit();
 		});
 }
