@@ -1,5 +1,5 @@
 node_modules
-cpp/_build_
+_build_
 *.sublime-*
 .DS_Store
 ._.DS_Store
