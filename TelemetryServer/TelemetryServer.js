@@ -7,6 +7,8 @@ var url = require('url');
 var fs = require('fs');
 var websocket = require('websocket'); // don't forget to run "npm install websocket"
 var dgram = require('dgram');
+var sensorReaderUDPMod = require('./server/SensorReaderUDP');
+var sensorDataSenderMod = require('./server/SensorDataSender');
 
 /*
 	SensorReaderSimulated
@@ -17,7 +19,7 @@ var dgram = require('dgram');
 	Whenever this happens, the SensorReader notifies any listener of the new piece of data.
 	It doesn't store/remember any data read, this is the responsibility of the code using it.
 */
-function SensorReaderSimulated() {
+/*function SensorReaderSimulated() {
 	this._interval = setInterval(this._onReceivedData.bind(this), 20);
 	this._onSensorDataReadyListeners = [];
 }
@@ -55,88 +57,8 @@ SensorReaderSimulated.prototype._onReceivedData = function() {
 		var listener = this._onSensorDataReadyListeners[i];
 		listener(dataPoint);
 	}
-};
+};*/
 
-/*
-	SensorReaderUDP
-*/
-function SensorReaderUDP(udpSocket) {
-	this._udpSocket = udpSocket;
-	this._onSensorDataReadyListeners = [];
-
-	this._onUDPSocketMessageHandler = this._onUDPSocketMessage.bind(this);
-	this._udpSocket.on('message', this._onUDPSocketMessageHandler);
-}
-
-SensorReaderUDP.prototype.dispose = function() {
-	console.log('DISPOSE SENSORREADERUDP!');
-	this._udpSocket.removeListener('message', this._onUDPSocketMessageHandler);
-};
-
-SensorReaderUDP.prototype._onUDPSocketMessage = function(message, remote) {
-	var text = 'UDP socket received message on ' + remote.address + ':' + remote.port;
-	var uint8Array = new Uint8Array(message);
-	var messageAsHex = '';
-	for (var i = 0; i < uint8Array.length /* same as remote.size */; i++) messageAsHex += uint8Array[i].toString(16) + ' ';
-	text += ' - ' + messageAsHex;
-	//console.log(text);
-
-	var dataPoint = {
-		accelerationX: 0,
-		accelerationY: 0,
-		accelerationZ: 0,
-		angularSpeedX: 0,
-		angularSpeedY: 0,
-		angularSpeedZ: 0,
-		temperature: 0,
-
-		magneticHeadingX: 0,
-		magneticHeadingY: 0,
-		magneticHeadingZ: 0,
-
-		temperature2: 0,
-		pressure: 0,
-
-		timestamp: 0
-	};
-
-	var dataView = new DataView(uint8Array.buffer);
-	var offset = 0;
-	dataPoint.accelerationX = dataView.getFloat64(offset, true);
-	offset += 8;
-	dataPoint.accelerationY = dataView.getFloat64(offset, true);
-	offset += 8;
-	dataPoint.accelerationZ = dataView.getFloat64(offset, true);
-	offset += 8;
-	dataPoint.angularSpeedX = dataView.getFloat64(offset, true);
-	offset += 8;
-	dataPoint.angularSpeedY = dataView.getFloat64(offset, true);
-	offset += 8;
-	dataPoint.angularSpeedZ = dataView.getFloat64(offset, true);
-	offset += 8;
-	dataPoint.temperature = dataView.getFloat32(offset, true);
-	offset += 4;
-
-	dataPoint.magneticHeadingX = dataView.getFloat64(offset, true);
-	offset += 8;
-	dataPoint.magneticHeadingY = dataView.getFloat64(offset, true);
-	offset += 8;
-	dataPoint.magneticHeadingZ = dataView.getFloat64(offset, true);
-	offset += 8;
-
-	dataPoint.temperature2 = dataView.getFloat32(offset, true);
-	offset += 4;
-	dataPoint.pressure = dataView.getFloat32(offset, true);
-	offset += 4;
-
-	dataPoint.timestamp = dataView.getUint32(offset, true);
-	offset += 4;
-
-	for (var i = 0; i < this._onSensorDataReadyListeners.length; ++i) {
-		var listener = this._onSensorDataReadyListeners[i];
-		listener(dataPoint);
-	}
-};
 /*
 SensorReaderUDP.prototype._onReceivedData = function()
 {
@@ -170,63 +92,6 @@ SensorReaderUDP.prototype._onReceivedData = function()
 };*/
 
 /*
-	SensorDataSender
-
-	A SensorDataSender is pairs a SensorReader to a websocket connection.
-
-	Whenever a data point is ready from the SensorReader, this object stores it. 
-	Then on a regular basisc, it sends the data points accumulated on the 
-	websocket. This basically data points to be send as a group and not individually
-	which would be costly.
-*/
-function SensorDataSender(sensorReader, connection) {
-	this._sensorReader = sensorReader;
-	this._connection = connection;
-
-	this._interval = setInterval(this._sendData.bind(this), 50);
-
-	this._maxNumDataPointsToSend = 2000;
-	this._dataPointsToSend = [];
-
-	this._onSensorDataReadyHandler = this._onSensorDataReadyListeners.bind(this);
-	this._sensorReader._onSensorDataReadyListeners.push(this._onSensorDataReadyHandler);
-
-	this._instanceID = SensorDataSender.numInstances; // Just for debug
-	SensorDataSender.numInstances++;
-
-	console.log('SensorDataSender#' + this._instanceID + ': created');
-}
-SensorDataSender.numInstances = 0;
-
-SensorDataSender.prototype.dispose = function() {
-	clearInterval(this._interval);
-
-	var index = this._sensorReader._onSensorDataReadyListeners.indexOf(this._onSensorDataReadyHandler);
-	if (index !== -1) {
-		this._sensorReader._onSensorDataReadyListeners.splice(index, 1);
-	} else {
-		console.error("something's wrong");
-	}
-
-	console.log('SensorDataSender#' + this._instanceID + ': dispose');
-};
-
-SensorDataSender.prototype._onSensorDataReadyListeners = function(dataPoint) {
-	this._dataPointsToSend.splice(0, 0, dataPoint);
-	if (this._dataPointsToSend.length > this._maxNumDataPointsToSend) {
-		this._dataPointsToSend.shift();
-		console.warn('buffer full');
-	}
-};
-
-SensorDataSender.prototype._sendData = function() {
-	//console.log("SensorDataSender#"+ this._instanceID + ": sending " + this._dataPointsToSend.length);
-	var jsonData = JSON.stringify(this._dataPointsToSend);
-	this._connection.sendUTF(jsonData);
-	this._dataPointsToSend = [];
-};
-
-/*
 	TelemetryServer
 */
 function TelemetryServer() {
@@ -239,7 +104,7 @@ function TelemetryServer() {
 	udpSocket.bind(8181, '127.0.0.1');
 
 	// Create SensorReaderUDP working on the UDP socket
-	this._sensorReader = new SensorReaderUDP(udpSocket);
+	this._sensorReader = new sensorReaderUDPMod.SensorReaderUDP(udpSocket);
 
 	// Prepare SensorDataSenders array for incoming websocket connections
 	this._sensorDataSenders = [];
@@ -277,7 +142,7 @@ function TelemetryServer() {
 			});
 			// TEMP! TEMP!
 
-			var sensorDataSender = new SensorDataSender(this._sensorReader, connection);
+			var sensorDataSender = new sensorDataSenderMod.SensorDataSender(this._sensorReader, connection);
 			this._sensorDataSenders.push(sensorDataSender);
 
 			console.log('SensorMonitor: ' + this._sensorDataSenders.length + ' connections in progress');
