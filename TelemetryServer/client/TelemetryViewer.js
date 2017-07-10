@@ -1,13 +1,12 @@
 'use strict';
 
-function TelemetryViewer( canvas )
-{
+function TelemetryViewer(canvas) {
     this._canvas = canvas;
 
     var now = new Date().getTime();
     var initialWidth = 10 * 1000;
-    var initialX = now - (initialWidth/2);
-   
+    var initialX = now - initialWidth / 2;
+
     this._graphDataWindow = {
         x: initialX,
         y: -5,
@@ -17,74 +16,74 @@ function TelemetryViewer( canvas )
 
     // The backed-up graph data windows for each type of data
     this._graphDataWindows = {
-        'accelerationX' : {
-            x: initialX,    
+        accelerationX: {
+            x: initialX,
             y: -4,
             width: initialWidth,
             height: 8
         },
-        'accelerationY' : {
-            x: initialX,    
+        accelerationY: {
+            x: initialX,
             y: -4,
             width: initialWidth,
             height: 8
         },
-        'accelerationZ' : {
-            x: initialX,    
+        accelerationZ: {
+            x: initialX,
             y: -4,
             width: initialWidth,
             height: 8
         },
 
-        'angularSpeedX' : {
-            x: initialX,    
+        angularSpeedX: {
+            x: initialX,
             y: -1000,
             width: initialWidth,
             height: 2000
         },
-        'angularSpeedY' : {
-            x: initialX,    
+        angularSpeedY: {
+            x: initialX,
             y: -1000,
             width: initialWidth,
             height: 2000
         },
-        'angularSpeedZ' : {
-            x: initialX,    
+        angularSpeedZ: {
+            x: initialX,
             y: -1000,
             width: initialWidth,
             height: 2000
         },
-        'temperature' : {
+        temperature: {
             x: initialX,
             y: -5,
             width: initialWidth,
             height: 40
         },
-        'magneticHeadingX' : {
+        magneticHeadingX: {
             x: initialX,
             y: -750,
             width: initialWidth,
             height: 1500
         },
-        'magneticHeadingY' : {
+        magneticHeadingY: {
             x: initialX,
             y: -750,
             width: initialWidth,
             height: 1500
         },
-        'magneticHeadingZ' : {
+        magneticHeadingZ: {
             x: initialX,
             y: -750,
             width: initialWidth,
             height: 1500
         },
-        'temperature2' : {
+        temperature2: {
             x: initialX,
             y: -5,
             width: initialWidth,
             height: 40
         },
-        'pressure' : {
+        pressure: {
             x: initialX,
             y: 1005,
             width: initialWidth,
@@ -95,16 +94,16 @@ function TelemetryViewer( canvas )
     this._graphData = [];
 
     this._graphOptions = {
-        yPropertyName: "angularSpeedX",
+        yPropertyName: 'angularSpeedX',
         clearCanvas: true,
         drawOriginAxes: true,
         drawDataRange: true,
         drawDataGaps: true,
-        contiguityThreshold: 25,       
+        contiguityThreshold: 25,
         textSize: 12,
         numMaxLinesX: 5,
         numMaxLinesY: 5,
-        getPrimaryLinesTextX: GraphDataPresenter.getLinesTextForTime, 
+        getPrimaryLinesTextX: GraphDataPresenter.getLinesTextForTime,
         getPrimaryLinesSpacingX: GraphDataPresenter.getPrimaryLinesSpacingForTime,
         getSecondaryLinesSpacingX: GraphDataPresenter.getSecondaryLinesSpacingForTime,
         getPrimaryLinesTextY: GraphDataPresenter.getLinesText,
@@ -113,7 +112,7 @@ function TelemetryViewer( canvas )
         points: {
             //typicalDataPointXSpacing: 10*60*1000,     // No need if we provide a contiguityThreshold
             maxPointSize: 5,
-            maxNumPoints: 500,
+            maxNumPoints: 500
         }
         /*colors: {
             clear:'#FFFFFF',
@@ -129,26 +128,26 @@ function TelemetryViewer( canvas )
     };
 
     // The graph controller is responsible for rendering the graph and handling input events to navigate in it
-    this._graphController = new GraphController( this._canvas, this._graphData, this._graphDataWindow, this._graphOptions );
+    this._graphController = new GraphController(this._canvas, this._graphData, this._graphDataWindow, this._graphOptions);
 
-     // When the user navigates in the graph (i.e. changes the graph data window), we need to check whether more data needs to be fetched
+    // When the user navigates in the graph (i.e. changes the graph data window), we need to check whether more data needs to be fetched
     this._graphController._onGraphDataWindowChange = this._onGraphDataWindowChange.bind(this);
-  
+
     this._isConnected = false;
     var host = window.location.host;
     this._socket = new WebSocket('ws://' + host);
 
     this._onSocketOpenHandler = this._onSocketOpen.bind(this);
-    this._socket.addEventListener( "open", this._onSocketOpenHandler );
-    
+    this._socket.addEventListener('open', this._onSocketOpenHandler);
+
     this._onSocketMessageHandler = this._onSocketMessage.bind(this);
-    this._socket.addEventListener( "message", this._onSocketMessageHandler );
+    this._socket.addEventListener('message', this._onSocketMessageHandler);
 
     this._onSocketErrorHandler = this._onSocketError.bind(this);
-    this._socket.addEventListener( "error", this._onSocketErrorHandler );
-    
+    this._socket.addEventListener('error', this._onSocketErrorHandler);
+
     this._onSocketCloseHandler = this._onSocketClose.bind(this);
-    this._socket.addEventListener( "close", this._onSocketCloseHandler );
+    this._socket.addEventListener('close', this._onSocketCloseHandler);
 
     this._onConnectionOpen = null;
     this._onConnectionError = null;
@@ -158,72 +157,68 @@ function TelemetryViewer( canvas )
     this._onAutoscrollChanged = null;
 
     // The type of graph data currently being displayed
-    this._graphDataType = 'temperature';                            // JBM: this could go away, and the source of truth could be the graphOptions.yPropertyName!
+    this._graphDataType = 'temperature'; // JBM: this could go away, and the source of truth could be the graphOptions.yPropertyName!
     this._graphOptions.yPropertyName = this._graphDataType;
-  
+
     this._onGraphDataTypeChanged = null;
 
+    // TEST!
+    var gamepadFlightControlsProvider = new GamepadFlightControlsProvider();
+    setInterval(
+        function() {
+            gamepadFlightControlsProvider.update();
+            var flightControls = gamepadFlightControlsProvider.flightControls;
+            var t = MathExtra.roundValueTo(flightControls.throttle, 0.01);
+            var r = MathExtra.roundValueTo(flightControls.rudder, 0.01);
+            console.log('t:' + t + ' r:' + r);
 
-// TEST!
-var gamepadFlightControlsProvider = new GamepadFlightControlsProvider();
-setInterval( 
-    function()
-    {
-        gamepadFlightControlsProvider.update();
-        var flightControls = gamepadFlightControlsProvider.flightControls;
-        var t = MathExtra.roundValueTo(flightControls.throttle,0.01);
-        var r = MathExtra.roundValueTo(flightControls.rudder,0.01);
-        console.log( "t:" + t + " r:" + r );
-               
-        if ( this._socket.readyState===1 )
-        {
-            this._socket.send( JSON.stringify({t:t, r:r}) );
-        }
-    }.bind(this), 20);
-// TEST!
+            if (this._socket.readyState === 1) {
+                this._socket.send(JSON.stringify({ t: t, r: r }));
+            }
+        }.bind(this),
+        20
+    );
+    // TEST!
 }
 
-TelemetryViewer.prototype.dispose = function()
-{
-    this._socket.removeEventListener( "open", this._onSocketOpenHandler );
-    this._socket.removeEventListener( "message", this._onSocketMessageHandler );
-    this._socket.removeEventListener( "error", this._onSocketErrorHandler );
+TelemetryViewer.prototype.dispose = function() {
+    this._socket.removeEventListener('open', this._onSocketOpenHandler);
+    this._socket.removeEventListener('message', this._onSocketMessageHandler);
+    this._socket.removeEventListener('error', this._onSocketErrorHandler);
     this._socket.close();
 };
 
-TelemetryViewer.prototype.getAutoscroll = function()
-{
+TelemetryViewer.prototype.getAutoscroll = function() {
     return this._autoscroll;
 };
 
-TelemetryViewer.prototype.setAutoscroll = function( autoscroll )
-{
-    if ( this._autoscroll===autoscroll )
+TelemetryViewer.prototype.setAutoscroll = function(autoscroll) {
+    if (this._autoscroll === autoscroll) {
         return;
+    }
 
     this._autoscroll = autoscroll;
 
-    if ( this._autoscroll )
-    {
+    if (this._autoscroll) {
         this._scrollToLatestData();
         this._render();
     }
 
-    if ( this._onAutoscrollChanged )
+    if (this._onAutoscrollChanged) {
         this._onAutoscrollChanged();
+    }
 };
 
-TelemetryViewer.prototype.getGraphDataType = function()
-{
+TelemetryViewer.prototype.getGraphDataType = function() {
     return this._graphDataType;
 };
 
-TelemetryViewer.prototype.setGraphDataType = function( graphDataType )
-{
-    if ( graphDataType===this._graphDataType )
+TelemetryViewer.prototype.setGraphDataType = function(graphDataType) {
+    if (graphDataType === this._graphDataType) {
         return;
+    }
 
-    // Remember current graph data y/height for current data type 
+    // Remember current graph data y/height for current data type
     this._graphDataWindows[this._graphDataType].y = this._graphDataWindow.y;
     this._graphDataWindows[this._graphDataType].height = this._graphDataWindow.height;
 
@@ -240,33 +235,26 @@ TelemetryViewer.prototype.setGraphDataType = function( graphDataType )
     this._graphController.render();
 
     // Notify
-    if ( this._onGraphDataTypeChanged )
-        this._onGraphDataTypeChanged( prevGraphDataType, this._graphDataType );
+    if (this._onGraphDataTypeChanged) {
+        this._onGraphDataTypeChanged(prevGraphDataType, this._graphDataType);
+    }
 };
 
-
-TelemetryViewer.prototype._onSocketOpen = function( /*??*/ )
-{
+TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
     this._isConnected = true;
     //this._socket.send('hello from the client');
-    if ( this._onConnectionOpen )
+    if (this._onConnectionOpen) {
         this._onConnectionOpen();
+    }
 };
 
-var i=0;
-TelemetryViewer.prototype._onSocketMessage = function( message )
-{
-
-if ( i%10 )
-    this._socket.send('number ' + i);
-i++;
-
-    var dataPoints = JSON.parse( message.data );
-    for ( var i=dataPoints.length-1; i>=0; i-- )
-    {
+TelemetryViewer.prototype._onSocketMessage = function(message) {
+    var dataPoints = JSON.parse(message.data);
+    for (var i = dataPoints.length - 1; i >= 0; i--) {
         var dataPoint = dataPoints[i];
-        this._graphData.splice(0, 0, {                      // use directly the dataPoint... need xPropertyName though for rendering...
-            x: dataPoint.timestamp, 
+        this._graphData.splice(0, 0, {
+            // use directly the dataPoint... need xPropertyName though for rendering...
+            x: dataPoint.timestamp,
 
             accelerationX: dataPoint.accelerationX,
             accelerationY: dataPoint.accelerationY,
@@ -279,7 +267,7 @@ i++;
             magneticHeadingX: dataPoint.magneticHeadingX,
             magneticHeadingY: dataPoint.magneticHeadingY,
             magneticHeadingZ: dataPoint.magneticHeadingZ,
-            
+
             temperature2: dataPoint.temperature2,
             pressure: dataPoint.pressure
         });
@@ -287,47 +275,43 @@ i++;
     this._render();
 };
 
-TelemetryViewer.prototype._onSocketError = function(error)
-{
-    if ( this._onConnectionError )
+TelemetryViewer.prototype._onSocketError = function(error) {
+    if (this._onConnectionError) {
         this._onConnectionError();
+    }
     alert('WebSocket error: ' + error);
 };
 
-TelemetryViewer.prototype._onSocketClose = function( /*??*/ )
-{
+TelemetryViewer.prototype._onSocketClose = function(/*??*/) {
     this._isConnected = false;
-    if ( this._onConnectionClose )
+    if (this._onConnectionClose) {
         this._onConnectionClose();
+    }
 };
 
-TelemetryViewer.prototype._render = function()
-{
-    if ( this._autoscroll )
-       this._scrollToLatestData();
+TelemetryViewer.prototype._render = function() {
+    if (this._autoscroll) {
+        this._scrollToLatestData();
+    }
 
-    GraphDataPresenter.render( this._canvas, this._graphData, this._graphDataWindow, this._graphOptions );
+    GraphDataPresenter.render(this._canvas, this._graphData, this._graphDataWindow, this._graphOptions);
 };
 
-TelemetryViewer.prototype._onGraphDataWindowChange = function( prevGraphDataWindow )
-{
-    if ( this.getAutoscroll() )
-    {
-        if ( this._graphDataWindow.x!==prevGraphDataWindow.x )
-        {
-            this.setAutoscroll( false );
+TelemetryViewer.prototype._onGraphDataWindowChange = function(prevGraphDataWindow) {
+    if (this.getAutoscroll()) {
+        if (this._graphDataWindow.x !== prevGraphDataWindow.x) {
+            this.setAutoscroll(false);
         }
     }
 };
 
 // Change the x position of the graph data window to show the latest data points.
 // This method doesn't affect the other graph data window properties.
-TelemetryViewer.prototype._scrollToLatestData = function()
-{
+TelemetryViewer.prototype._scrollToLatestData = function() {
     var graphData = this._graphData;
-    if ( graphData.length===0 )
+    if (graphData.length === 0) {
         return;
+    }
     var latestDataPoint = graphData[0];
     this._graphDataWindow.x = latestDataPoint.x - this._graphDataWindow.width;
 };
-

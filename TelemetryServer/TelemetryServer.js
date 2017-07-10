@@ -5,8 +5,7 @@ var https = require('https');
 var url = require('url');
 //var querystring = require('querystring');
 var fs = require('fs');
-var websocket = require('websocket');		// don't forget to run "npm install websocket"
-
+var websocket = require('websocket'); // don't forget to run "npm install websocket"
 var dgram = require('dgram');
 
 /*
@@ -18,33 +17,27 @@ var dgram = require('dgram');
 	Whenever this happens, the SensorReader notifies any listener of the new piece of data.
 	It doesn't store/remember any data read, this is the responsibility of the code using it.
 */
-function SensorReaderSimulated()
-{
-	this._interval = setInterval( this._onReceivedData.bind(this), 20 );
+function SensorReaderSimulated() {
+	this._interval = setInterval(this._onReceivedData.bind(this), 20);
 	this._onSensorDataReadyListeners = [];
 }
 
-SensorReaderSimulated.prototype.dispose = function()
-{
-	clearInterval( this._interval );
+SensorReaderSimulated.prototype.dispose = function() {
+	clearInterval(this._interval);
 };
 
-SensorReaderSimulated.prototype._onReceivedData = function()
-{
+SensorReaderSimulated.prototype._onReceivedData = function() {
 	var now = new Date().getTime();
-	var t0 = (now % 4000) / 4000;
-	var t1 = (now % 1000) / 1000;
-	var t2 = (now % 333) / 333;
-	var t4 = (now % 1642) / 1642;
-	
-	var temperature = (t0*30 - 15) + 50  + Math.sin( t2 * Math.PI * 2) * 2;
+	var t0 = now % 4000 / 4000;
+	var t1 = now % 1000 / 1000;
+	var t2 = now % 333 / 333;
+	var t4 = now % 1642 / 1642;
 
-	var angularSpeedX = 
-		Math.sin( t0 * Math.PI * 2) * 15 + 
-		Math.sin( t1 * Math.PI * 2) * (5*(Math.sin( t4 * Math.PI * 2)+1)) +
-		Math.sin( t2 * Math.PI * 2) * 2 + 
-		50;
-	
+	var temperature = t0 * 30 - 15 + 50 + Math.sin(t2 * Math.PI * 2) * 2;
+
+	var angularSpeedX =
+		Math.sin(t0 * Math.PI * 2) * 15 + Math.sin(t1 * Math.PI * 2) * (5 * (Math.sin(t4 * Math.PI * 2) + 1)) + Math.sin(t2 * Math.PI * 2) * 2 + 50;
+
 	var dataPoint = {
 		accelerationX: 10,
 		accelerationY: 20,
@@ -58,41 +51,36 @@ SensorReaderSimulated.prototype._onReceivedData = function()
 
 	//console.log("SensorReader: read point " + dataPoint.timestamp);
 
-	for ( var i=0; i<this._onSensorDataReadyListeners.length; ++i )
-	{
+	for (var i = 0; i < this._onSensorDataReadyListeners.length; ++i) {
 		var listener = this._onSensorDataReadyListeners[i];
-		listener( dataPoint );
+		listener(dataPoint);
 	}
 };
 
 /*
 	SensorReaderUDP
 */
-function SensorReaderUDP( udpSocket )
-{
+function SensorReaderUDP(udpSocket) {
 	this._udpSocket = udpSocket;
 	this._onSensorDataReadyListeners = [];
 
 	this._onUDPSocketMessageHandler = this._onUDPSocketMessage.bind(this);
-	this._udpSocket.on('message', this._onUDPSocketMessageHandler );
+	this._udpSocket.on('message', this._onUDPSocketMessageHandler);
 }
 
-SensorReaderUDP.prototype.dispose = function()
-{
-	console.log("DISPOSE SENSORREADERUDP!");
-	this._udpSocket.removeListener('message', this._onUDPSocketMessageHandler );
+SensorReaderUDP.prototype.dispose = function() {
+	console.log('DISPOSE SENSORREADERUDP!');
+	this._udpSocket.removeListener('message', this._onUDPSocketMessageHandler);
 };
 
-SensorReaderUDP.prototype._onUDPSocketMessage = function(message, remote)
-{
-	var text = 'UDP socket received message on ' + remote.address + ':' + remote.port; 
-	var uint8Array = new Uint8Array( message );
-	var messageAsHex = "";
-	for ( var i=0; i<uint8Array.length /* same as remote.size */; i++ )
-		messageAsHex += uint8Array[i].toString(16) + " ";
+SensorReaderUDP.prototype._onUDPSocketMessage = function(message, remote) {
+	var text = 'UDP socket received message on ' + remote.address + ':' + remote.port;
+	var uint8Array = new Uint8Array(message);
+	var messageAsHex = '';
+	for (var i = 0; i < uint8Array.length /* same as remote.size */; i++) messageAsHex += uint8Array[i].toString(16) + ' ';
 	text += ' - ' + messageAsHex;
 	//console.log(text);
-	
+
 	var dataPoint = {
 		accelerationX: 0,
 		accelerationY: 0,
@@ -114,27 +102,39 @@ SensorReaderUDP.prototype._onUDPSocketMessage = function(message, remote)
 
 	var dataView = new DataView(uint8Array.buffer);
 	var offset = 0;
-	dataPoint.accelerationX = dataView.getFloat64(offset, true);	offset+=8;
-	dataPoint.accelerationY = dataView.getFloat64(offset, true);	offset+=8;
-	dataPoint.accelerationZ = dataView.getFloat64(offset, true);	offset+=8;
-	dataPoint.angularSpeedX = dataView.getFloat64(offset, true);	offset+=8;
-	dataPoint.angularSpeedY = dataView.getFloat64(offset, true);	offset+=8;
-	dataPoint.angularSpeedZ = dataView.getFloat64(offset, true);	offset+=8;
-	dataPoint.temperature = dataView.getFloat32(offset, true);		offset+=4;
-	
-	dataPoint.magneticHeadingX = dataView.getFloat64(offset, true); offset+=8;
-	dataPoint.magneticHeadingY = dataView.getFloat64(offset, true); offset+=8;
-	dataPoint.magneticHeadingZ = dataView.getFloat64(offset, true); offset+=8;
-	
-	dataPoint.temperature2 = dataView.getFloat32(offset, true); 	offset+=4;
-	dataPoint.pressure = dataView.getFloat32(offset, true); 		offset+=4;
-	
-	dataPoint.timestamp = dataView.getUint32(offset, true);			offset+=4;
+	dataPoint.accelerationX = dataView.getFloat64(offset, true);
+	offset += 8;
+	dataPoint.accelerationY = dataView.getFloat64(offset, true);
+	offset += 8;
+	dataPoint.accelerationZ = dataView.getFloat64(offset, true);
+	offset += 8;
+	dataPoint.angularSpeedX = dataView.getFloat64(offset, true);
+	offset += 8;
+	dataPoint.angularSpeedY = dataView.getFloat64(offset, true);
+	offset += 8;
+	dataPoint.angularSpeedZ = dataView.getFloat64(offset, true);
+	offset += 8;
+	dataPoint.temperature = dataView.getFloat32(offset, true);
+	offset += 4;
 
-	for ( var i=0; i<this._onSensorDataReadyListeners.length; ++i )
-	{
+	dataPoint.magneticHeadingX = dataView.getFloat64(offset, true);
+	offset += 8;
+	dataPoint.magneticHeadingY = dataView.getFloat64(offset, true);
+	offset += 8;
+	dataPoint.magneticHeadingZ = dataView.getFloat64(offset, true);
+	offset += 8;
+
+	dataPoint.temperature2 = dataView.getFloat32(offset, true);
+	offset += 4;
+	dataPoint.pressure = dataView.getFloat32(offset, true);
+	offset += 4;
+
+	dataPoint.timestamp = dataView.getUint32(offset, true);
+	offset += 4;
+
+	for (var i = 0; i < this._onSensorDataReadyListeners.length; ++i) {
 		var listener = this._onSensorDataReadyListeners[i];
-		listener( dataPoint );
+		listener(dataPoint);
 	}
 };
 /*
@@ -179,175 +179,147 @@ SensorReaderUDP.prototype._onReceivedData = function()
 	websocket. This basically data points to be send as a group and not individually
 	which would be costly.
 */
-function SensorDataSender( sensorReader, connection )
-{
+function SensorDataSender(sensorReader, connection) {
 	this._sensorReader = sensorReader;
 	this._connection = connection;
 
-	this._interval = setInterval( this._sendData.bind(this), 50 );
+	this._interval = setInterval(this._sendData.bind(this), 50);
 
 	this._maxNumDataPointsToSend = 2000;
-	this._dataPointsToSend = [];	
+	this._dataPointsToSend = [];
 
 	this._onSensorDataReadyHandler = this._onSensorDataReadyListeners.bind(this);
-	this._sensorReader._onSensorDataReadyListeners.push( this._onSensorDataReadyHandler );
+	this._sensorReader._onSensorDataReadyListeners.push(this._onSensorDataReadyHandler);
 
-	this._instanceID = SensorDataSender.numInstances;		// Just for debug
+	this._instanceID = SensorDataSender.numInstances; // Just for debug
 	SensorDataSender.numInstances++;
 
-	console.log("SensorDataSender#"+ this._instanceID + ": created");
+	console.log('SensorDataSender#' + this._instanceID + ': created');
 }
 SensorDataSender.numInstances = 0;
 
-SensorDataSender.prototype.dispose = function()
-{
-	clearInterval( this._interval );
+SensorDataSender.prototype.dispose = function() {
+	clearInterval(this._interval);
 
-	var index = this._sensorReader._onSensorDataReadyListeners.indexOf( this._onSensorDataReadyHandler );
-	if (index!==-1)
-	{
+	var index = this._sensorReader._onSensorDataReadyListeners.indexOf(this._onSensorDataReadyHandler);
+	if (index !== -1) {
 		this._sensorReader._onSensorDataReadyListeners.splice(index, 1);
-	}
-	else
-	{
+	} else {
 		console.error("something's wrong");
 	}
 
-	console.log("SensorDataSender#"+ this._instanceID + ": dispose");
+	console.log('SensorDataSender#' + this._instanceID + ': dispose');
 };
 
-SensorDataSender.prototype._onSensorDataReadyListeners = function( dataPoint )
-{
+SensorDataSender.prototype._onSensorDataReadyListeners = function(dataPoint) {
 	this._dataPointsToSend.splice(0, 0, dataPoint);
-	if ( this._dataPointsToSend.length>this._maxNumDataPointsToSend )
-	{
+	if (this._dataPointsToSend.length > this._maxNumDataPointsToSend) {
 		this._dataPointsToSend.shift();
-		console.warn("buffer full");
+		console.warn('buffer full');
 	}
 };
- 
-SensorDataSender.prototype._sendData = function()
-{
+
+SensorDataSender.prototype._sendData = function() {
 	//console.log("SensorDataSender#"+ this._instanceID + ": sending " + this._dataPointsToSend.length);
 	var jsonData = JSON.stringify(this._dataPointsToSend);
 	this._connection.sendUTF(jsonData);
 	this._dataPointsToSend = [];
 };
 
-
 /*
 	TelemetryServer
 */
-function TelemetryServer()
-{
+function TelemetryServer() {
 	// Create UDP socket for discussing with the C++ SensorSender companion program
 	var udpSocket = dgram.createSocket('udp4');
-	udpSocket.on('listening', 
-		function() 
-		{
-		    var address = udpSocket.address();
-		    console.log('UDP Server listening on ' + address.address + ":" + address.port);
-		});
+	udpSocket.on('listening', function() {
+		var address = udpSocket.address();
+		console.log('UDP Server listening on ' + address.address + ':' + address.port);
+	});
 	udpSocket.bind(8181, '127.0.0.1');
 
-	// Create SensorReaderUDP working on the UDP socket 
+	// Create SensorReaderUDP working on the UDP socket
 	this._sensorReader = new SensorReaderUDP(udpSocket);
-	
+
 	// Prepare SensorDataSenders array for incoming websocket connections
 	this._sensorDataSenders = [];
 
 	// Create HTTP server
-	this._httpServer = http.createServer( 
-		function(req, res)
-		{
-			var path = url.parse(req.url).pathname;
-			var query = url.parse(req.url).query; 
-			if ( path.indexOf('/')===0 )
-			{
-				var filename = path.substr(1);
-				if ( filename.length===0 )
-				{
-					filename = 'TelemetryViewer.html';
-				}
-				TelemetryServer._serveFile( filename, res );
+	this._httpServer = http.createServer(function(req, res) {
+		var path = url.parse(req.url).pathname;
+		var query = url.parse(req.url).query;
+		if (path.indexOf('/') === 0) {
+			var filename = path.substr(1);
+			if (filename.length === 0) {
+				filename = 'TelemetryViewer.html';
 			}
-			else
-			{
-				TelemetryServer._createHTMLErrorResponse( res, 404, "Page not found");
-			}
-		});
-	this._httpServer.listen(8080, 
-		function() 
-		{
-    		console.log('HTTP server listening');
-		});
+			TelemetryServer._serveFile(filename, res);
+		} else {
+			TelemetryServer._createHTMLErrorResponse(res, 404, 'Page not found');
+		}
+	});
+	this._httpServer.listen(8080, function() {
+		console.log('HTTP server listening');
+	});
 
 	// Create Websocket server
 	this._websocketServer = new websocket.server({
 		httpServer: this._httpServer
 	});
-	this._websocketServer.on('request', 
-		function(request) 
-		{
-    		var connection = request.accept(null, request.origin);
+	this._websocketServer.on(
+		'request',
+		function(request) {
+			var connection = request.accept(null, request.origin);
 
+			// TEMP! TEMP!
+			connection.on('message', function(message) {
+				console.log('Received ' + message.type + ' message:' + message.utf8Data);
+			});
+			// TEMP! TEMP!
 
-connection.on('message', 
-	function(message)
-	{
-		console.log("Received " + message.type + " message:" + message.utf8Data );
-	});
+			var sensorDataSender = new SensorDataSender(this._sensorReader, connection);
+			this._sensorDataSenders.push(sensorDataSender);
 
-    		var sensorDataSender = new SensorDataSender( this._sensorReader, connection );
-    		this._sensorDataSenders.push( sensorDataSender );
+			console.log('SensorMonitor: ' + this._sensorDataSenders.length + ' connections in progress');
 
-    		console.log("SensorMonitor: " + this._sensorDataSenders.length + " connections in progress");
-
-    		connection.on('close', 
-    			function(connection) 
-    			{
+			connection.on(
+				'close',
+				function(connection) {
 					//console.log('Websocket server connection closed' + connection);
 					sensorDataSender.dispose();
 					var index = this._sensorDataSenders.indexOf(sensorDataSender);
-					if (index!==-1) 
-					{
-					    this._sensorDataSenders.splice(index, 1);
-					}
-					else
-					{
+					if (index !== -1) {
+						this._sensorDataSenders.splice(index, 1);
+					} else {
 						console.warn("couldn't find sender for connection...");
 					}
-					
-					console.log("SensorMonitor: " + this._sensorDataSenders.length + " connections in progress");
-   				}.bind(this));
-		}.bind(this)); 
-	console.log("Websocket server created");
+
+					console.log('SensorMonitor: ' + this._sensorDataSenders.length + ' connections in progress');
+				}.bind(this)
+			);
+		}.bind(this)
+	);
+	console.log('Websocket server created');
 }
 
-TelemetryServer.prototype.dispose = function()
-{
+TelemetryServer.prototype.dispose = function() {
 	// Stop things here!
-	console.log("dispose to implement here...")
+	console.log('dispose to implement here...');
 };
 
-
-TelemetryServer._getFilenameExtension = function( filename )
-{
+TelemetryServer._getFilenameExtension = function(filename) {
 	var parts = filename.split('.');
-	if ( parts.length>1 )
-	{
-		return parts[parts.length-1];
+	if (parts.length > 1) {
+		return parts[parts.length - 1];
 	}
-	return "";
+	return '';
 };
 
-TelemetryServer._getFileContentType = function( filename )
-{
+TelemetryServer._getFileContentType = function(filename) {
 	var contentType = null;
-	var extension = TelemetryServer._getFilenameExtension( filename ).toLowerCase();
-	switch ( extension )
-	{
-		case 'html': 
+	var extension = TelemetryServer._getFilenameExtension(filename).toLowerCase();
+	switch (extension) {
+		case 'html':
 			return 'text/html';
 		case 'js':
 			return 'application/javascript';
@@ -355,80 +327,69 @@ TelemetryServer._getFileContentType = function( filename )
 	return null;
 };
 
-TelemetryServer._serveFile = function( filename, res )
-{
+TelemetryServer._serveFile = function(filename, res) {
 	var contentType = TelemetryServer._getFileContentType(filename);
-	if ( !contentType )
-	{
-		console.warn("Serving file: " + filename + ". Unsupported file/content type");
+	if (!contentType) {
+		console.warn('Serving file: ' + filename + '. Unsupported file/content type');
 		res.end();
 		return;
 	}
-	console.log("Serving file: " + filename + " as " + contentType);
+	console.log('Serving file: ' + filename + ' as ' + contentType);
 
 	filename = 'client/' + filename;
-	
-	fs.readFile(filename, 'utf8', 
-		function(err, data) 
-			{
-		  		if ( err ) 
-		  		{
-		    		TelemetryServer._createHTMLErrorResponse( res, 500, err );
-		  		}
-		  		else
-		  		{
-		  			res.writeHead(200, {"content-type": contentType});
-					res.write(data);
-					res.end();
-				}
-			});
+
+	fs.readFile(filename, 'utf8', function(err, data) {
+		if (err) {
+			TelemetryServer._createHTMLErrorResponse(res, 500, err);
+		} else {
+			res.writeHead(200, { 'content-type': contentType });
+			res.write(data);
+			res.end();
+		}
+	});
 };
 
-TelemetryServer._createHTMLErrorResponse = function( res, code, message )
-{
-	res.writeHead(code, {"content-type": "text/html"});
+TelemetryServer._createHTMLErrorResponse = function(res, code, message) {
+	res.writeHead(code, { 'content-type': 'text/html' });
 	res.write(
-		'<!DOCTYPE html>'+
-		'<html>'+
-		'    <head>'+
-		'        <meta charset="utf-8" />'+
-		'        <title>Error</title>'+
-		'    </head>'+ 
-		'    <body>'+
-		'     	<p>' + message + '</p>'+
-		'    </body>'+
-		'</html>');
+		'<!DOCTYPE html>' +
+			'<html>' +
+			'    <head>' +
+			'        <meta charset="utf-8" />' +
+			'        <title>Error</title>' +
+			'    </head>' +
+			'    <body>' +
+			'     	<p>' +
+			message +
+			'</p>' +
+			'    </body>' +
+			'</html>'
+	);
 	res.end();
 };
 
 /*
 	Main
 */
-function Main()
-{
+function Main() {
 	var telemetryServer = new TelemetryServer();
 
 	//http://stackoverflow.com/questions/10021373/what-is-the-windows-equivalent-of-process-onsigint-in-node-js/14861513#14861513
 	//http://stackoverflow.com/questions/6958780/quitting-node-js-gracefully
-	if (process.platform === "win32") 
-	{
-		var rl = require("readline").createInterface(
-			{
-				input: process.stdin,
-				output: process.stdout
-			});
-		rl.on("SIGINT", function () 
-			{
-				process.emit("SIGINT");
-			});
-	}
-	process.on("SIGINT", function () 
-		{
-			console.log("Stopping server...");
-			telemetryServer.dispose();
-			process.exit();
+	if (process.platform === 'win32') {
+		var rl = require('readline').createInterface({
+			input: process.stdin,
+			output: process.stdout
 		});
+		rl.on('SIGINT', function() {
+			process.emit('SIGINT');
+		});
+	}
+	process.on('SIGINT', function() {
+		console.log('Stopping server...');
+		telemetryServer.dispose();
+		process.exit();
+	});
 }
 
 Main();
-
