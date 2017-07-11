@@ -13,7 +13,7 @@
 			"auto_format_on_save": false,
 			"debug": false,
 			"node_path": "",
-			"prettier_cli_path": "node_modules/.bin/prettier",
+			"prettier_cli_path": "TelemetryServer/node_modules/.bin/prettier",
 			"prettier_options":
 			{
 				"bracketSpacing": true,
