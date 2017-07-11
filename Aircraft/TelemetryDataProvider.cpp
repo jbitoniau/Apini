@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include "LocoTime.h"
+#include "LocoThread.h"
 
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     double getAccelerometerHalfScaleRange( MPU6050& mpu6050 )
@@ -126,24 +127,24 @@ TelemetryDataProvider::TelemetryDataProvider()
 {
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     // MPU6050
-    mpu6050.initialize();
-    mpu6050.setI2CMasterModeEnabled(0);     // !!!!!!!!!!!!!
-    mpu6050.setI2CBypassEnabled(1);         // !!!!!!!!!!!!!
-    mpu6050.setFullScaleAccelRange(MPU6050_ACCEL_FS_4);     // in Gs
-    mpu6050.setFullScaleGyroRange(MPU6050_GYRO_FS_1000);    // in deg/s
-    double accelerometerHalfScaleRange = getAccelerometerHalfScaleRange(mpu6050);
-    double gyroscopeHalfScaleRange = getGyroscopeHalfScaleRange(mpu6050);
-    printf(mpu6050.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+    mpu6050 = new MPU6050(0x69);
+
+    mpu6050->initialize();
+    mpu6050->setI2CMasterModeEnabled(0);     // !!!!!!!!!!!!!
+    mpu6050->setI2CBypassEnabled(1);         // !!!!!!!!!!!!!
+    mpu6050->setFullScaleAccelRange(MPU6050_ACCEL_FS_4);     // in Gs
+    mpu6050->setFullScaleGyroRange(MPU6050_GYRO_FS_1000);    // in deg/s
+    printf(mpu6050->testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 
     // HMC5883L
-    hmc5883l.initialize();
-    printf(hmc5883l.testConnection() ? "HMC5883L connection successful" : "HMC5883L connection failed");
-    Note: the initial setting of the device should happen here
+    hmc5883l = new HMC5883L(0x1E);
+    hmc5883l->initialize();
+    printf(hmc5883l->testConnection() ? "HMC5883L connection successful" : "HMC5883L connection failed");
 
     // MS561101BA
-    ms561101ba.initialize();      // Note: this is costly on the MS5611-01BA. See if we can decrease the delay
-    printf(ms561101ba.testConnection() ? "MS561101BA connection successful" : "MS561101BA connection failed");
-    Note: the initial setting of the device should happen here
+    ms561101ba = new MS561101BA(0x77);
+    ms561101ba->initialize();      // Note: this is costly on the MS5611-01BA. See if we can decrease the delay
+    printf(ms561101ba->testConnection() ? "MS561101BA connection successful" : "MS561101BA connection failed");
 #endif
 }
 
@@ -153,11 +154,11 @@ TelemetryData TelemetryDataProvider::getTelemetryData() const
 
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     // MPU6050
-    double accelerometerHalfScaleRange = getAccelerometerHalfScaleRange(mpu6050);
-    double gyroscopeHalfScaleRange = getGyroscopeHalfScaleRange(mpu6050);
+    double accelerometerHalfScaleRange = getAccelerometerHalfScaleRange(*mpu6050);
+    double gyroscopeHalfScaleRange = getGyroscopeHalfScaleRange(*mpu6050);
     int16_t ax, ay, az;
     int16_t gx, gy, gz;
-    mpu6050.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);       // This takes 1 or 2 ms
+    mpu6050->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);       // This takes 1 or 2 ms
     telemetryData.accelerationX = static_cast<double>(ax) * accelerometerHalfScaleRange / 32768.0;
     telemetryData.accelerationY = static_cast<double>(ay) * accelerometerHalfScaleRange / 32768.0;
     telemetryData.accelerationZ = static_cast<double>(az) * accelerometerHalfScaleRange / 32768.0;
@@ -165,14 +166,14 @@ TelemetryData TelemetryDataProvider::getTelemetryData() const
     telemetryData.angularSpeedY = static_cast<double>(gy) * gyroscopeHalfScaleRange / 32768.0;
     telemetryData.angularSpeedZ = static_cast<double>(gz) * gyroscopeHalfScaleRange / 32768.0;
 
-    int16_t t = mpu6050.getTemperature();
+    int16_t t = mpu6050->getTemperature();
     telemetryData.temperature = static_cast<float>(t)/340.f + 36.53f;
         
     // HMC5883L
     int16_t mx = 0;
     int16_t my = 0;
     int16_t mz = 0;
-    hmc5883l.getHeading(&mx, &my, &mz);                     // This takes 1 or 2 ms
+    hmc5883l->getHeading(&mx, &my, &mz);                     // This takes 1 or 2 ms
     telemetryData.magneticHeadingX = static_cast<double>(mx);
     telemetryData.magneticHeadingY = static_cast<double>(my);
     telemetryData.magneticHeadingZ = static_cast<double>(mz);
@@ -180,7 +181,7 @@ TelemetryData TelemetryDataProvider::getTelemetryData() const
     // MS561101BA
     float temperature = 0.f;            
     float pressure = 0.f;
-    ms561101ba.readValues( &pressure, &temperature );       // This takes 4 or 5 ms
+    ms561101ba->readValues( &pressure, &temperature );       // This takes 4 or 5 ms
     telemetryData.temperature2 = temperature;
     telemetryData.pressure = pressure;
 #endif

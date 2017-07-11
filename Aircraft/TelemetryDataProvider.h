@@ -21,8 +21,8 @@ public:
     TelemetryData getTelemetryData() const;
 
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
-    MPU6050     mpu6050(0x69);
-    HMC5883L    hmc5883l(0x1E);
-    MS561101BA  ms561101ba(0x77);
+    MPU6050*     mpu6050;
+    HMC5883L*    hmc5883l;
+    MS561101BA*  ms561101ba;
 #endif
 };
