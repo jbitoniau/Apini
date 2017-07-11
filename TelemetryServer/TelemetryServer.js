@@ -6,7 +6,7 @@ var url = require('url');
 //var querystring = require('querystring');
 var fs = require('fs');
 var websocket = require('websocket'); // don't forget to run "npm install websocket"
-var dgram = require('dgram');
+
 var telemetryReceiverMod = require('./server/TelemetryReceiver');
 var telemetrySenderMod = require('./server/TelemetrySender');
 
@@ -14,16 +14,8 @@ var telemetrySenderMod = require('./server/TelemetrySender');
 	TelemetryServer
 */
 function TelemetryServer() {
-	// Create UDP socket for discussing with the C++ SensorSender companion program
-	var udpSocket = dgram.createSocket('udp4');
-	udpSocket.on('listening', function() {
-		var address = udpSocket.address();
-		console.log('UDP Server listening on ' + address.address + ':' + address.port);
-	});
-	udpSocket.bind(8181, '127.0.0.1');
-
 	// Create TelemetryReceiver working on the UDP socket
-	this._telemetryReceiver = new telemetryReceiverMod.TelemetryReceiver(udpSocket);
+	this._telemetryReceiver = new telemetryReceiverMod.TelemetryReceiver();
 
 	// Prepare SensorDataSenders array for incoming websocket connections
 	this._telemetrySenders = [];

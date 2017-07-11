@@ -1,8 +1,16 @@
+var dgram = require('dgram');
+
 /*
     TelemetryReceiver
 */
-var TelemetryReceiver = function(udpSocket) {
-    this._udpSocket = udpSocket;
+var TelemetryReceiver = function() {
+    this._udpSocket = dgram.createSocket('udp4');
+    this._udpSocket.on('listening', function() {
+        var address = this._udpSocket.address();
+        console.log('UDP Server listening on ' + address.address + ':' + address.port);
+    }.bind(this));
+    this._udpSocket.bind(8181, '127.0.0.1');
+
     this._onTelemetrySampleReadyListeners = [];
 
     this._onUDPSocketMessageHandler = this._onUDPSocketMessage.bind(this);
@@ -12,6 +20,8 @@ var TelemetryReceiver = function(udpSocket) {
 TelemetryReceiver.prototype.dispose = function() {
     console.log('DISPOSE SENSORREADERUDP!');
     this._udpSocket.removeListener('message', this._onUDPSocketMessageHandler);
+
+    // CLOSE SOCKET!
 };
 
 TelemetryReceiver.prototype._onUDPSocketMessage = function(message, remote) {
