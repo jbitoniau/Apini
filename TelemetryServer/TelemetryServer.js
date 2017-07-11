@@ -7,89 +7,8 @@ var url = require('url');
 var fs = require('fs');
 var websocket = require('websocket'); // don't forget to run "npm install websocket"
 var dgram = require('dgram');
-var sensorReaderUDPMod = require('./server/SensorReaderUDP');
-var sensorDataSenderMod = require('./server/SensorDataSender');
-
-/*
-	SensorReaderSimulated
-
-	A SensorReader is capable for reading data from a bunch on sensors all at once
-	on a regular basis (basically as these data point arrive).
-
-	Whenever this happens, the SensorReader notifies any listener of the new piece of data.
-	It doesn't store/remember any data read, this is the responsibility of the code using it.
-*/
-/*function SensorReaderSimulated() {
-	this._interval = setInterval(this._onReceivedData.bind(this), 20);
-	this._onSensorDataReadyListeners = [];
-}
-
-SensorReaderSimulated.prototype.dispose = function() {
-	clearInterval(this._interval);
-};
-
-SensorReaderSimulated.prototype._onReceivedData = function() {
-	var now = new Date().getTime();
-	var t0 = now % 4000 / 4000;
-	var t1 = now % 1000 / 1000;
-	var t2 = now % 333 / 333;
-	var t4 = now % 1642 / 1642;
-
-	var temperature = t0 * 30 - 15 + 50 + Math.sin(t2 * Math.PI * 2) * 2;
-
-	var angularSpeedX =
-		Math.sin(t0 * Math.PI * 2) * 15 + Math.sin(t1 * Math.PI * 2) * (5 * (Math.sin(t4 * Math.PI * 2) + 1)) + Math.sin(t2 * Math.PI * 2) * 2 + 50;
-
-	var dataPoint = {
-		accelerationX: 10,
-		accelerationY: 20,
-		accelerationZ: 30,
-		angularSpeedX: angularSpeedX,
-		angularSpeedY: 15,
-		angularSpeedZ: 25,
-		temperature: temperature,
-		timestamp: new Date().getTime()
-	};
-
-	//console.log("SensorReader: read point " + dataPoint.timestamp);
-
-	for (var i = 0; i < this._onSensorDataReadyListeners.length; ++i) {
-		var listener = this._onSensorDataReadyListeners[i];
-		listener(dataPoint);
-	}
-};*/
-
-/*
-SensorReaderUDP.prototype._onReceivedData = function()
-{
-	var now = new Date().getTime();
-	var t0 = (now % 4000) / 4000;
-	var t1 = (now % 1000) / 1000;
-	var t2 = (now % 333) / 333;
-	var t4 = (now % 1642) / 1642;
-	
-	var temperature = (t0*30 - 15) + 50  + Math.sin( t2 * Math.PI * 2) * 2;
-
-	var angularSpeedX = 
-		Math.sin( t0 * Math.PI * 2) * 15 + 
-		Math.sin( t1 * Math.PI * 2) * (5*(Math.sin( t4 * Math.PI * 2)+1)) +
-		Math.sin( t2 * Math.PI * 2) * 2 + 
-		50;
-	
-	var dataPoint = {
-		temperature: temperature,
-		angularSpeedX: angularSpeedX,
-		timestamp: new Date().getTime()
-	};
-
-	//console.log("SensorReader: read point " + dataPoint.timestamp);
-
-	for ( var i=0; i<this._onSensorDataReadyListeners.length; ++i )
-	{
-		var listener = this._onSensorDataReadyListeners[i];
-		listener( dataPoint );
-	}
-};*/
+var telemetryReceiverMod = require('./server/TelemetryReceiver');
+var telemetrySenderMod = require('./server/TelemetrySender');
 
 /*
 	TelemetryServer
@@ -103,11 +22,11 @@ function TelemetryServer() {
 	});
 	udpSocket.bind(8181, '127.0.0.1');
 
-	// Create SensorReaderUDP working on the UDP socket
-	this._sensorReader = new sensorReaderUDPMod.SensorReaderUDP(udpSocket);
+	// Create TelemetryReceiver working on the UDP socket
+	this._telemetryReceiver = new telemetryReceiverMod.TelemetryReceiver(udpSocket);
 
 	// Prepare SensorDataSenders array for incoming websocket connections
-	this._sensorDataSenders = [];
+	this._telemetrySenders = [];
 
 	// Create HTTP server
 	this._httpServer = http.createServer(function(req, res) {
@@ -134,32 +53,32 @@ function TelemetryServer() {
 	this._websocketServer.on(
 		'request',
 		function(request) {
-			var connection = request.accept(null, request.origin);
+			var websocketConnection = request.accept(null, request.origin);
 
 			// TEMP! TEMP!
-			// connection.on('message', function(message) {
+			// websocketConnectionelemetrySamplesToSend.on('message', function(message) {
 			// 	console.log('Received ' + message.type + ' message:' + message.utf8Data);
 			// });
 			// TEMP! TEMP!
 
-			var sensorDataSender = new sensorDataSenderMod.SensorDataSender(this._sensorReader, connection);
-			this._sensorDataSenders.push(sensorDataSender);
+			var telemetrySender = new telemetrySenderMod.TelemetrySender(this._telemetryReceiver, websocketConnection);
+			this._telemetrySenders.push(telemetrySender);
 
-			console.log('SensorMonitor: ' + this._sensorDataSenders.length + ' connections in progress');
+			console.log('SensorMonitor: ' + this._telemetrySenders.length + ' connections in progress');
 
-			connection.on(
+			websocketConnection.on(
 				'close',
-				function(connection) {
-					//console.log('Websocket server connection closed' + connection);
-					sensorDataSender.dispose();
-					var index = this._sensorDataSenders.indexOf(sensorDataSender);
+				function(websocketConnection) {
+					//console.log('Websocket server connection closed' + websocketConnection);
+					telemetrySender.dispose();
+					var index = this._telemetrySenders.indexOf(telemetrySender);
 					if (index !== -1) {
-						this._sensorDataSenders.splice(index, 1);
+						this._telemetrySenders.splice(index, 1);
 					} else {
 						console.warn("couldn't find sender for connection...");
 					}
 
-					console.log('SensorMonitor: ' + this._sensorDataSenders.length + ' connections in progress');
+					console.log('SensorMonitor: ' + this._telemetrySenders.length + ' connections in progress');
 				}.bind(this)
 			);
 		}.bind(this)
