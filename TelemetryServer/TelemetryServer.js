@@ -137,9 +137,9 @@ function TelemetryServer() {
 			var connection = request.accept(null, request.origin);
 
 			// TEMP! TEMP!
-			connection.on('message', function(message) {
-				console.log('Received ' + message.type + ' message:' + message.utf8Data);
-			});
+			// connection.on('message', function(message) {
+			// 	console.log('Received ' + message.type + ' message:' + message.utf8Data);
+			// });
 			// TEMP! TEMP!
 
 			var sensorDataSender = new sensorDataSenderMod.SensorDataSender(this._sensorReader, connection);

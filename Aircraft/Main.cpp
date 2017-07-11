@@ -49,7 +49,7 @@ int main( int argc, char* argv[] )
     while (true)
     {   
         // Get telemetry data
-        const TelemetryData& telemetryData = telemetryDataProvider.getTelemetryData();
+        TelemetryData telemetryData = telemetryDataProvider.getTelemetryData();
 
         // Serialize it
         int numBytesToSend = serializeTelemetryData( telemetryData, buffer );   
@@ -66,8 +66,11 @@ int main( int argc, char* argv[] )
         }
         lastLoopIndex = loopIndex;
 
-        printf(".");
-        fflush(stdout);
+        if ( loopIndex % 50 == 0 )
+        {
+            printf(".");
+            fflush(stdout);
+        }
     }
 
     return 0;

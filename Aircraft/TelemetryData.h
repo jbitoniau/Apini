@@ -12,11 +12,11 @@ public:
         angularSpeedX(0.0),
         angularSpeedY(0.0),
         angularSpeedZ(0.0),
-        temperature(0.f),
+        temperature(22.f),
         magneticHeadingX(0.0),
         magneticHeadingY(0.0),
         magneticHeadingZ(0.0),
-        temperature2(0.f),
+        temperature2(21.f),
         pressure(0.f),
         timestamp(0)
     {

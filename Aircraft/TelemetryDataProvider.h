@@ -18,10 +18,7 @@ class TelemetryDataProvider
 public:
     TelemetryDataProvider();
 
-    const TelemetryData& getTelemetryData() const;
-
-private:
-    TelemetryData telemetryData;
+    TelemetryData getTelemetryData() const;
 
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     MPU6050     mpu6050(0x69);

@@ -1,6 +1,7 @@
 #include "TelemetryDataProvider.h"
 
-#include <stdio.h>      
+#include <stdio.h>
+#include "LocoTime.h"
 
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     double getAccelerometerHalfScaleRange( MPU6050& mpu6050 )
@@ -146,8 +147,10 @@ TelemetryDataProvider::TelemetryDataProvider()
 #endif
 }
 
-const TelemetryData& TelemetryDataProvider::getTelemetryData() const
+TelemetryData TelemetryDataProvider::getTelemetryData() const
 {
+    TelemetryData telemetryData;
+
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     // MPU6050
     double accelerometerHalfScaleRange = getAccelerometerHalfScaleRange(mpu6050);
@@ -180,10 +183,10 @@ const TelemetryData& TelemetryDataProvider::getTelemetryData() const
     ms561101ba.readValues( &pressure, &temperature );       // This takes 4 or 5 ms
     telemetryData.temperature2 = temperature;
     telemetryData.pressure = pressure;
-    
+#endif
+
     // Timestamp
     telemetryData.timestamp = Loco::Time::getTimeAsMilliseconds();
-#endif
 
     return telemetryData;
 }
