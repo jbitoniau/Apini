@@ -18,7 +18,7 @@ var TelemetryReceiver = function() {
 }
 
 TelemetryReceiver.prototype.dispose = function() {
-    console.log('DISPOSE SENSORREADERUDP!');
+    console.log('DISPOSE TelemetryReceiver!');
     this._udpSocket.removeListener('message', this._onUDPSocketMessageHandler);
 
     // CLOSE SOCKET!

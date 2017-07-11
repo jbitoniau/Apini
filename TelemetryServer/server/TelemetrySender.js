@@ -1,12 +1,12 @@
 /*
     TelemetrySender
 
-    A TelemetrySender pairs a SensorReader to a websocket connection.
+    A TelemetrySender pairs a TelemetryReceiver to a websocket connection.
 
-    Whenever a data point is ready from the SensorReader, this object stores it. 
-    Then on a regular basisc, it sends the data points accumulated on the 
-    websocket. This basically data points to be send as a group and not individually
-    which would be costly.
+    Whenever a telemetry sample is ready from the TelemetryReceiver, this object stores it. 
+    
+    Then on a regular basis, it sends the accumulated telemetry samples on the websocket. 
+    Packaging samples together like this is better for the connection.
 */
 var TelemetrySender = function(telemetryReceiver, websocketConnection) {
     this._telemetryReceiver = telemetryReceiver;
@@ -14,7 +14,7 @@ var TelemetrySender = function(telemetryReceiver, websocketConnection) {
 
     this._interval = setInterval(this._sendData.bind(this), 50);
 
-    this._maxNumTelemetrySamplesToSend = 2000;
+    this._maxNumTelemetrySamplesToSend = 100;
     this._telemetrySamplesToSend = [];
 
     this._onTelemetrySampleReadyHandler = this._onTelemetrySampleReady.bind(this);
@@ -28,11 +28,11 @@ var TelemetrySender = function(telemetryReceiver, websocketConnection) {
 TelemetrySender.numInstances = 0;
 
 TelemetrySender.prototype.dispose = function() {
-    console.log('TelemetrySender#' + this._instanceID + ': dispose');
+    console.log('TelemetrySender #' + this._instanceID + ': dispose');
 
     clearInterval(this._interval);
 
-    var index = this._telemetryReceiver._onTelemetrySampleReadyListeners.indexOf(this._onSensorDataReadyHandler);
+    var index = this._telemetryReceiver._onTelemetrySampleReadyListeners.indexOf(this._onTelemetrySampleReadyHandler);
     if (index !== -1) {
         this._telemetryReceiver._onTelemetrySampleReadyListeners.splice(index, 1);
         TelemetrySender.numInstances--;

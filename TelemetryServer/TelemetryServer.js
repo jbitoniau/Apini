@@ -17,7 +17,7 @@ function TelemetryServer() {
 	// Create TelemetryReceiver working on the UDP socket
 	this._telemetryReceiver = new telemetryReceiverMod.TelemetryReceiver();
 
-	// Prepare SensorDataSenders array for incoming websocket connections
+	// Prepare TelemetrySenders array for incoming websocket connections
 	this._telemetrySenders = [];
 
 	// Create HTTP server
@@ -56,7 +56,7 @@ function TelemetryServer() {
 			var telemetrySender = new telemetrySenderMod.TelemetrySender(this._telemetryReceiver, websocketConnection);
 			this._telemetrySenders.push(telemetrySender);
 
-			console.log('SensorMonitor: ' + this._telemetrySenders.length + ' connections in progress');
+			console.log('TelemetryServer: ' + this._telemetrySenders.length + ' connections in progress');
 
 			websocketConnection.on(
 				'close',
@@ -70,7 +70,7 @@ function TelemetryServer() {
 						console.warn("couldn't find sender for connection...");
 					}
 
-					console.log('SensorMonitor: ' + this._telemetrySenders.length + ' connections in progress');
+					console.log('TelemetryServer: ' + this._telemetrySenders.length + ' connections in progress');
 				}.bind(this)
 			);
 		}.bind(this)
