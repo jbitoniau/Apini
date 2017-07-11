@@ -24,20 +24,21 @@ var TelemetrySender = function(telemetryReceiver, websocketConnection) {
     TelemetrySender.numInstances++;
 
     console.log('TelemetrySender #' + this._instanceID + ': created');
-}
+};
 TelemetrySender.numInstances = 0;
 
 TelemetrySender.prototype.dispose = function() {
+    console.log('TelemetrySender#' + this._instanceID + ': dispose');
+
     clearInterval(this._interval);
 
     var index = this._telemetryReceiver._onTelemetrySampleReadyListeners.indexOf(this._onSensorDataReadyHandler);
     if (index !== -1) {
         this._telemetryReceiver._onTelemetrySampleReadyListeners.splice(index, 1);
+        TelemetrySender.numInstances--;
     } else {
         console.error("something's wrong");
     }
-
-    console.log('TelemetrySender#' + this._instanceID + ': dispose');
 };
 
 TelemetrySender.prototype._onTelemetrySampleReady = function(telemetrySample) {
