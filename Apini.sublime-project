@@ -1,0 +1,31 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"settings":
+	{
+		"js_prettier":
+		{
+			"allow_inline_formatting": true,
+			"auto_format_on_save": false,
+			"debug": false,
+			"node_path": "",
+			"prettier_cli_path": "node_modules/.bin/prettier",
+			"prettier_options":
+			{
+				"bracketSpacing": true,
+				"jsxBracketSameLine": true,
+				"parser": "babylon",
+				"printWidth": 160,
+				"singleQuote": true,
+				"trailingComma": "none"
+			}
+		},
+		"python_interpreter_path": ".env/bin/python",
+		"tab_size": 4,
+		"translate_tabs_to_spaces": true
+	}
+}
