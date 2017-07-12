@@ -31,7 +31,11 @@ SET	(	SOURCES
 		TelemetryProvider.cpp
 		TelemetrySender.h
 		TelemetrySender.cpp
-		
+
+		FlightControls.h
+		FlightControlsReceiver.h
+		FlightControlsReceiver.cpp
+
 		Main.cpp
 	)
 

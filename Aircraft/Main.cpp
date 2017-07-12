@@ -8,6 +8,7 @@
 
 #include "TelemetryProvider.h"
 #include "TelemetrySender.h"
+#include "FlightControlsReceiver.h"
 
 int main( int argc, char* argv[] )
 {
@@ -18,11 +19,19 @@ int main( int argc, char* argv[] )
     TelemetryProvider telemetryProvider;
     TelemetrySender telemetrySender;
 
+    FlightControls flightControls;
+    FlightControlsReceiver flightControlsReceiver;
+
     printf("Aircraft started\n");
     while (true)
     {   
         TelemetryData telemetryData = telemetryProvider.getTelemetryData();
         telemetrySender.send( telemetryData );
+
+        if ( flightControlsReceiver.receive(flightControls) )
+        {
+            printf("received controls! throttle:%f", flightControls.rudder );
+        } 
 
         int loopIndex = static_cast<int>( std::floor( Loco::Time::getTimeAsMilliseconds()/framePeriod) );
         while ( loopIndex==lastLoopIndex )

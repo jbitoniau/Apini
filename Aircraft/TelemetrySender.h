@@ -10,9 +10,10 @@ public:
     virtual ~TelemetrySender();
 
     bool send( const TelemetryData& telemetryData );
-    static int serializeTelemetryData( const TelemetryData& telemetryData, char* buffer );
-
+    
 private:
+    static int serializeTelemetryData( const TelemetryData& telemetryData, char* buffer );
+    
     Loco::UDPSocket* socket;
     const int bufferSize = 512;
     char* buffer;
