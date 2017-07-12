@@ -148,6 +148,15 @@ TelemetryDataProvider::TelemetryDataProvider()
 #endif
 }
 
+TelemetryDataProvider::~TelemetryDataProvider()
+{
+#if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
+    delete mpu6050;
+    delete hmc5883l;
+    delete ms561101ba;
+#endif
+}
+
 TelemetryData TelemetryDataProvider::getTelemetryData() const
 {
     TelemetryData telemetryData;

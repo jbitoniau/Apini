@@ -17,7 +17,8 @@ class TelemetryDataProvider
 {
 public:
     TelemetryDataProvider();
-
+    virtual ~TelemetryDataProvider();
+    
     TelemetryData getTelemetryData() const;
 
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX

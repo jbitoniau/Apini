@@ -29,6 +29,10 @@ SET	(	SOURCES
 		TelemetryData.h
 		TelemetryDataProvider.h
 		TelemetryDataProvider.cpp
+
+		TelemetrySender.h
+		TelemetrySender.cpp
+		
 		Main.cpp
 	)
 
