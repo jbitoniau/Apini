@@ -13,11 +13,11 @@
     }
 #endif
 
-class TelemetryDataProvider
+class TelemetryProvider
 {
 public:
-    TelemetryDataProvider();
-    virtual ~TelemetryDataProvider();
+    TelemetryProvider();
+    virtual ~TelemetryProvider();
     
     TelemetryData getTelemetryData() const;
 

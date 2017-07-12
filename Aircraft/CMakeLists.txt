@@ -27,9 +27,8 @@ SET	(	SOURCES
 		UDPSocket.cpp
 		
 		TelemetryData.h
-		TelemetryDataProvider.h
-		TelemetryDataProvider.cpp
-
+		TelemetryProvider.h
+		TelemetryProvider.cpp
 		TelemetrySender.h
 		TelemetrySender.cpp
 		

@@ -1,4 +1,4 @@
-#include "TelemetryDataProvider.h"
+#include "TelemetryProvider.h"
 
 #include <stdio.h>
 #include "LocoTime.h"
@@ -123,7 +123,7 @@
     }
 #endif
 
-TelemetryDataProvider::TelemetryDataProvider()
+TelemetryProvider::TelemetryProvider()
 {
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     // MPU6050
@@ -148,7 +148,7 @@ TelemetryDataProvider::TelemetryDataProvider()
 #endif
 }
 
-TelemetryDataProvider::~TelemetryDataProvider()
+TelemetryProvider::~TelemetryProvider()
 {
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     delete mpu6050;
@@ -157,7 +157,7 @@ TelemetryDataProvider::~TelemetryDataProvider()
 #endif
 }
 
-TelemetryData TelemetryDataProvider::getTelemetryData() const
+TelemetryData TelemetryProvider::getTelemetryData() const
 {
     TelemetryData telemetryData;
 

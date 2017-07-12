@@ -6,7 +6,7 @@
 #include "LocoTime.h"
 #include "LocoThread.h"
 
-#include "TelemetryDataProvider.h"
+#include "TelemetryProvider.h"
 #include "TelemetrySender.h"
 
 int main( int argc, char* argv[] )
@@ -15,13 +15,13 @@ int main( int argc, char* argv[] )
     int startTime = Loco::Time::getTimeAsMilliseconds();
     int lastLoopIndex = static_cast<int>( std::floor( startTime/framePeriod) );
 
-    TelemetryDataProvider telemetryDataProvider;
+    TelemetryProvider telemetryProvider;
     TelemetrySender telemetrySender;
 
     printf("Aircraft started\n");
     while (true)
     {   
-        TelemetryData telemetryData = telemetryDataProvider.getTelemetryData();
+        TelemetryData telemetryData = telemetryProvider.getTelemetryData();
         telemetrySender.send( telemetryData );
 
         int loopIndex = static_cast<int>( std::floor( Loco::Time::getTimeAsMilliseconds()/framePeriod) );
