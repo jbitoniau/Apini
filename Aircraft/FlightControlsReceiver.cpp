@@ -4,8 +4,8 @@
 
 FlightControlsReceiver::FlightControlsReceiver()
 {
-    socket = new Loco::UDPSocket( 8484 );
-
+    socket = new Loco::UDPSocket( localPort );
+    printf("FlightControlsReceiver: on port %d\n", localPort);
     buffer = new char[bufferSize];
     memset( buffer, 0, bufferSize );
 }
@@ -22,20 +22,18 @@ FlightControlsReceiver::~FlightControlsReceiver()
     unsigned short int sourcePort;
     int errorCode;
     unsigned int numBytesReceived = socket->receive2( buffer, bufferSize, sourceAddress, sourcePort, errorCode );
-    if ( numBytesReceived<0 )
+    if ( errorCode!=0 )
     {
-        printf("Error receiving data %d", errorCode)
+        printf("Error receiving data %d", errorCode);
         return false;
     }
     else if ( numBytesReceived==0 )
     {
         return false;
     }
-    else
-    {
 
-    }
-    return false;
+    printf("Received %d\n", numBytesReceived);
+    return true;
  }
 
 bool FlightControlsReceiver::deserializeFlightControls( char* messageBuffer, unsigned int messageSize, FlightControls& flightControls )

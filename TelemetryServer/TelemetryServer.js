@@ -9,6 +9,8 @@ var websocket = require('websocket'); // don't forget to run "npm install websoc
 
 var telemetryReceiverMod = require('./server/TelemetryReceiver');
 var telemetrySenderMod = require('./server/TelemetrySender');
+var flightControlsSenderMod = require('./server/FlightControlsSender');
+
 
 /*
     TelemetryServer
@@ -37,6 +39,13 @@ function TelemetryServer() {
     this._httpServer.listen(8080, function() {
         console.log('HTTP server listening');
     });
+
+this._flightControls = { txt:'toto' }; 
+this._flightControlsSender = new flightControlsSenderMod.FlightControlsSender();
+setInterval( function() {
+    this._flightControlsSender.send( this._flightControls );
+}.bind(this), 2000 );
+
 
     // Create Websocket server
     this._websocketServer = new websocket.server({

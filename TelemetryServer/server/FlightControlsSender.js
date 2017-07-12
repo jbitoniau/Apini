@@ -1,50 +1,45 @@
 var dgram = require('dgram');
 
 /*
-    TelemetryReceiver
+    FlightControlsSender
 */
-var TelemetryReceiver = function() {
-    this._localPort = 8092;
-    this._remotePort = 8082;
+var FlightControlsSender = function() {
+    this._localPort = 8091;
+    this._remotePort = 8081;
+    this._remoteAddress = '127.0.0.1';
 
     this._udpSocket = dgram.createSocket('udp4');
     this._udpSocket.on(
         'listening',
         function() {
             var address = this._udpSocket.address();
-            console.log('TelemetryReceiver: opened UDP socket on ' + address.address + ':' + address.port);
+            console.log('FlightControlsSender: opened UDP socket on ' + address.address + ':' + address.port);
         }.bind(this)
     );
     this._udpSocket.bind(this._localPort, '127.0.0.1');
-
-    this._onTelemetrySampleReadyListeners = [];
-
-    this._onUDPSocketMessageHandler = this._onUDPSocketMessage.bind(this);
-    this._udpSocket.on('message', this._onUDPSocketMessageHandler);
 };
 
-TelemetryReceiver.prototype.dispose = function() {
-    console.log('DISPOSE TelemetryReceiver!');
-    this._udpSocket.removeListener('message', this._onUDPSocketMessageHandler);
-
+FlightControlsSender.prototype.dispose = function() {
+    console.log('DISPOSE FlightControlsSender!');
     // CLOSE SOCKET!
 };
 
-TelemetryReceiver.prototype._onUDPSocketMessage = function(message, remote) {
-    var uint8Array = new Uint8Array(message);
+FlightControlsSender.prototype.send = function(flightControls) {
+    var message = 'Hello!';
+    var buffer = new Buffer(message);
 
-    if (remote.port !== this._remotePort) {
-        console.warn('TelemetryReceiver: receiving data from unexpected remove port');
-    }
+    this._udpSocket.send(buffer, 0, message.length, this._remotePort, this._remoteAddress, function(err, bytes) {
+        if (err) {
+            console.warn('FlightControlsSender: error while sending data');
+        }
+        // close?
+    });
 
-    // var text = 'UDP socket received message on ' + remote.address + ':' + remote.port;
-    // var messageAsHex = '';
-    // for (var i = 0; i < uint8Array.length /* same as remote.size */; i++) {
-    //     messageAsHex += uint8Array[i].toString(16) + ' ';
-    // }
-    // text += ' - ' + messageAsHex;
-    //console.log(text);
+    console.log('UDP message sent to ' + this._remoteAddress + ':' + this._remotePort);
+};
 
+/*var uint8Array = new Uint8Array(message);
+    
     var telemetrySample = {
         accelerationX: 0,
         accelerationY: 0,
@@ -99,7 +94,6 @@ TelemetryReceiver.prototype._onUDPSocketMessage = function(message, remote) {
     for (var i = 0; i < this._onTelemetrySampleReadyListeners.length; ++i) {
         var listener = this._onTelemetrySampleReadyListeners[i];
         listener(telemetrySample);
-    }
-};
+    }*/
 
-exports.TelemetryReceiver = TelemetryReceiver;
+exports.FlightControlsSender = FlightControlsSender;

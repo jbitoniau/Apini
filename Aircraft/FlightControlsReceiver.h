@@ -17,4 +17,7 @@ private:
     Loco::UDPSocket* socket;
     const int bufferSize = 512;
     char* buffer;
+
+    const unsigned int localPort = 8081;
+    //const unsigned int remotePort = 8092;
 };  

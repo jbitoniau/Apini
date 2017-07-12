@@ -2,8 +2,9 @@
 
 TelemetrySender::TelemetrySender()
 {
-    socket = new Loco::UDPSocket( 8282 );
-
+    socket = new Loco::UDPSocket( localPort );
+    printf("TelemetrySender: on port %d for remote port %d \n", localPort, remotePort);
+   
     buffer = new char[bufferSize];
     memset( buffer, 0, bufferSize );
 }
@@ -17,7 +18,7 @@ TelemetrySender::~TelemetrySender()
 bool TelemetrySender::send( const TelemetryData& telemetryData ) 
 {
     int numBytesToSend = serializeTelemetryData( telemetryData, buffer );   
-    int numBytesSent = socket->send( buffer, numBytesToSend, "127.0.0.1", 8181 );
+    int numBytesSent = socket->send( buffer, numBytesToSend, "127.0.0.1", remotePort );
     bool result = (numBytesToSend==numBytesSent);
     return result;
 }
