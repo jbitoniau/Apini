@@ -28,27 +28,39 @@ FlightControlsSender.prototype.send = function(flightControls) {
     
     var uint8Array = new Uint8Array(512);
     var dataView = new DataView(uint8Array.buffer);
-
     var offset = 0;
     dataView.setFloat32(offset, flightControls.throttle, true);     // true for little endian!!! 
     offset+=4;
     dataView.setFloat32(offset, flightControls.rudder, true); 
     offset+=4;
+    dataView.setFloat32(offset, flightControls.elevators, true); 
+    offset+=4;
+    dataView.setFloat32(offset, flightControls.ailerons, true); 
+    offset+=4;
 
-    // var txt = "";
-    // for ( var i=0; i<offset; i++ )
-    // {
-    //     txt += uint8Array[i].toString(16);// + "-";
-    // }
-    // console.log('FlightControlsSender: to ' + this._remoteAddress + ':' + this._remotePort + ": " + txt );
-    
     var buffer = Buffer.from(uint8Array);       // There must be ways to avoid this copy here...
     this._udpSocket.send(buffer, 0, offset, this._remotePort, this._remoteAddress, function(err, bytes) {
         if (err) {
             console.warn('FlightControlsSender: error while sending data');
+            // close?
         }
-        // close?
     });
+
+    console.log('FlightControlsSender: to ' + this._remoteAddress + ':' + this._remotePort + ": " +
+        FlightControlsSender._uint8ArrayAsHexString(uint8Array, offset) + " - " + JSON.stringify(flightControls));
 };
+
+FlightControlsSender._uint8ArrayAsHexString = function( uint8Array, length ){
+    if ( length===undefined ) {
+        length = uint8Array.length;
+    }
+    var string = "";
+    for ( var i=0; i<length; i++ )
+    {
+        string += uint8Array[i].toString(16);
+    }
+    return string;
+};
+
 
 exports.FlightControlsSender = FlightControlsSender;

@@ -39,56 +39,43 @@ GamepadFlightControlsProvider.prototype.update = function() {
         gamepad = GamepadFlightControlsProvider._getGamepadByIndex(this._gamepadIndex);
     }
 
-    // Movement stick
-    var axes = gamepad.axes;
-    var x1 = 0;
-    var y1 = 0;
+    // Get stick positions
+    var axes = gamepad.axes;                // Values for axes are in the [0..1] range
+    var stick1Position = { x: 0, y: 0 };
     if (axes[0]) {
-        x1 = axes[0];
+        stick1Position.x = axes[0];
     }
     if (axes[1]) {
-        y1 = -1 * axes[1];
+        stick1Position.y = -1 * axes[1];
     }
-    var position1 = { x: x1, y: y1 }; 
-    position1 = GamepadFlightControlsProvider._applyDeadZoneRadius( this._deadZoneRadius, position1 );
 
-    this._flightControls.throttle = position1.y + 0.5;
-    this._flightControls.rudder = position1.x;
+    var stick2Position = { x: 0, y: 0 };
+    if (axes[2]) {
+        stick2Position.x = axes[2];
+    }
+    if (axes[3]) {
+        stick2Position.y = -1 * axes[3];
+    }
 
-    // Camera stick
-    /* var xcam = 0;
-    var ycam = 0;
-    if ( axes[2] )
-    {
-        xcam = axes[2];
-    }
-    if ( axes[3] )
-    {
-        ycam = -1 * axes[3];
-    }
-    var cam = this._applyDeadZoneRadius( xcam, ycam );
-    this._flightControls.lookUp = cam.y;
-    this._flightControls.lookRight = -cam.x * 0.5;
+    // Apply dead zone to both stick positions
+    //console.log("GamepadFlightControlsProvider.update: stick1Position: " + JSON.stringify(stick1Position) + " stick2Position:" + JSON.stringify(stick2Position) );
+    stick1Position = GamepadFlightControlsProvider._applyDeadZoneRadius(this._deadZoneRadius, stick1Position);
+    stick2Position = GamepadFlightControlsProvider._applyDeadZoneRadius(this._deadZoneRadius, stick2Position);
 
-    // Action buttons
-    var buttons = gamepad.buttons;
-    if ( buttons[0] )
-    {
-        this._flightControls.attack = buttons[0].pressed;
-    }
-    if ( buttons[1] )
-    {
-        this._flightControls.jump = buttons[1].pressed;
-    }*/
+    // Convert stick positions to flight controls
+    this._flightControls.throttle = MathExtra.clamp(stick1Position.y + 0.5, 0, 1);
+    this._flightControls.rudder = MathExtra.clamp(stick1Position.x, -0.5, 0.5);
+    this._flightControls.elevators = MathExtra.clamp(stick2Position.y, -0.5, 0.5);
+    this._flightControls.ailerons = MathExtra.clamp(stick2Position.x, -0.5, 0.5);
 };
 
 GamepadFlightControlsProvider._applyDeadZoneRadius = function(deadZoneRadius, position) {
-    var result = {x:0, y:0};
+    var result = { x: 0, y: 0 };
     var d = Math.sqrt(position.x * position.x + position.y * position.y);
     if (d >= deadZoneRadius) {
         var d2 = (d - deadZoneRadius) / (1 - deadZoneRadius);
-        result.x = (position.x / d) * d2;
-        result.y = (position.y / d) * d2;
+        result.x = position.x / d * d2;
+        result.y = position.y / d * d2;
     }
     return result;
 };

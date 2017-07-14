@@ -63,6 +63,10 @@ bool FlightControlsReceiver::deserializeFlightControls( char* buffer, unsigned i
     memcpy( reinterpret_cast<char*>(&flightControls.throttle), buffer+offset, floatSize ); 
     offset+=floatSize;
     memcpy( reinterpret_cast<char*>(&flightControls.rudder), buffer+offset, floatSize ); 
+    offset+=floatSize;
+    memcpy( reinterpret_cast<char*>(&flightControls.elevators), buffer+offset, floatSize ); 
+    offset+=floatSize;
+    memcpy( reinterpret_cast<char*>(&flightControls.ailerons), buffer+offset, floatSize ); 
   
     return true;
 }

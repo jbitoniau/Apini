@@ -2,6 +2,7 @@
 
 //#include <cstdint>
 
+// TODO: write proper setters/getters which enforce validity!
 class FlightControls
 {
 public:

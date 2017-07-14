@@ -30,7 +30,7 @@ int main( int argc, char* argv[] )
 
         if ( flightControlsReceiver.receive(flightControls) )
         {
-            printf("throttle:%f rudder:%f\n", flightControls.throttle, flightControls.rudder );
+            printf("throttle:%f rudder:%f elevators:%f ailerons:%f\n", flightControls.throttle, flightControls.rudder, flightControls.elevators, flightControls.ailerons);
         } 
 
         int loopIndex = static_cast<int>( std::floor( Loco::Time::getTimeAsMilliseconds()/framePeriod) );

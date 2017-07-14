@@ -170,6 +170,7 @@ function TelemetryViewer(canvas) {
             var flightControls = gamepadFlightControlsProvider.flightControls;
             if (this._socket.readyState === 1) {
                 var jsonString = JSON.stringify(flightControls);
+                //console.log("Sending: " + jsonString );
                 this._socket.send(jsonString);
             }
         }.bind(this),
