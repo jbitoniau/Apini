@@ -76,28 +76,31 @@ function TelemetryServer() {
 
             console.log('TelemetryServer: ' + this._telemetrySenders.length + ' connections in progress');
 
+            var telemetryServer = this;
             websocketConnection.on(
                 'close',
-                function(websocketConnection) {
+                function(reasonCode, description) {
+                    //console.log("reasonCode: " + reasonCode + " desc:" + description);
+
                     // TODO: this needs to be less hacky...
-                    if (this._flightControlsReceiver && websocketConnection === this._flightControlsReceiver._websocketConnection) {
+                    if (telemetryServer._flightControlsReceiver && websocketConnection === telemetryServer._flightControlsReceiver._websocketConnection) {
                         console.log('TelemetryServer: no more FlightControlsReceiver');
-                        this._flightControlsReceiver.dispose();
-                        this._flightControlsReceiver = null;
+                        telemetryServer._flightControlsReceiver.dispose();
+                        telemetryServer._flightControlsReceiver = null;
                     }
 
                     // Stop forwarding telemetry samples from TelemetryReceiver to TelemetrySender
-                    var index = this._telemetryReceiver._onTelemetrySampleReadyListeners.indexOf(onTelemetrySampleReadyHandler);
+                    var index = telemetryServer._telemetryReceiver._onTelemetrySampleReadyListeners.indexOf(onTelemetrySampleReadyHandler);
                     if (index !== -1) {
-                        this._telemetryReceiver._onTelemetrySampleReadyListeners.splice(index, 1);
+                        telemetryServer._telemetryReceiver._onTelemetrySampleReadyListeners.splice(index, 1);
                     } else {
                         console.warn("TelemetryServer: couldn't find TelemetrySender's handler in TelemetryReceiver's listeners");
                     }
 
                     // Forget about this TelemetrySender
-                    var index = this._telemetrySenders.indexOf(telemetrySender);
+                    var index = telemetryServer._telemetrySenders.indexOf(telemetrySender);
                     if (index !== -1) {
-                        this._telemetrySenders.splice(index, 1);
+                        telemetryServer._telemetrySenders.splice(index, 1);
                     } else {
                         console.warn("TelemetryServer: couldn't find TelemetrySender corresponding to closing connection");
                     }
@@ -105,8 +108,8 @@ function TelemetryServer() {
                     // Dispose TelemetrySender
                     telemetrySender.dispose();
 
-                    console.log('TelemetryServer: ' + this._telemetrySenders.length + ' connections in progress');
-                }.bind(this)
+                    console.log('TelemetryServer: ' + telemetryServer._telemetrySenders.length + ' connections in progress');
+                }
             );
         }.bind(this)
     );
