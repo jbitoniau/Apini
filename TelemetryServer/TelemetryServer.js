@@ -40,18 +40,9 @@ function TelemetryServer() {
         console.log('HTTP server listening');
     });
 
-    // FLIGHT CONTROLS!!!
+    // Flight controls receiver and sender
     this._flightControlsReceiver = null;
-    this._flightControlsSender = null;//
-
     this._flightControlsSender = new flightControlsSenderMod.FlightControlsSender();
-    setInterval( function(){
-        var flightControls = {
-            throttle:0.2,
-            rudder:0.1
-        };
-        this._flightControlsSender.send(flightControls);
-    }.bind(this), 2000 );
 
     // Create Websocket server
     this._websocketServer = new websocket.server({
@@ -62,23 +53,15 @@ function TelemetryServer() {
         function(request) {
             var websocketConnection = request.accept(null, request.origin);
 
-            /*if ( !this._flightControlsReceiver )
-            {
-                console.log("CREATING FlightControlsReceiver+Sender");
+            // TODO: this needs to be less hacky...
+            if (!this._flightControlsReceiver) {
+                console.log('TelemetryServer: using this new connection to create FlightControlsReceiver');
                 this._flightControlsReceiver = new flightControlsReceiverMod.FlightControlsReceiver(websocketConnection);
-                this._flightControlsReceiver._onFlightControlsReceived = function( flightControls ) {
+                this._flightControlsReceiver._onFlightControlsReceived = function(flightControls) {
                     this._flightControlsSender.send(flightControls);
                 }.bind(this);
+            }
 
-                setInterval( function(){
-                    var telemetrySample = {
-                        throttle:0.2,
-                        rudder:0.1
-                    };
-                    telemetrySender.addTelemetrySampleToSend(telemetrySample);
-                }, 1000 );
-            }*/
-            
             // Create a new TelemetrySender for this websocket connection
             var telemetrySender = new telemetrySenderMod.TelemetrySender(websocketConnection);
 
@@ -96,6 +79,13 @@ function TelemetryServer() {
             websocketConnection.on(
                 'close',
                 function(websocketConnection) {
+                    // TODO: this needs to be less hacky...
+                    if (this._flightControlsReceiver && websocketConnection === this._flightControlsReceiver._websocketConnection) {
+                        console.log('TelemetryServer: no more FlightControlsReceiver');
+                        this._flightControlsReceiver.dispose();
+                        this._flightControlsReceiver = null;
+                    }
+
                     // Stop forwarding telemetry samples from TelemetryReceiver to TelemetrySender
                     var index = this._telemetryReceiver._onTelemetrySampleReadyListeners.indexOf(onTelemetrySampleReadyHandler);
                     if (index !== -1) {

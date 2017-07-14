@@ -33,26 +33,20 @@ FlightControlsReceiver::~FlightControlsReceiver()
         return false;
     }
 
-    //unsigned char t[4] = {0x3e, 0x4c, 0xcc, 0xcd};
-    unsigned char t[4] = {0xcd, 0xcc, 0x4c, 0x3e };
-    float f = *reinterpret_cast<float*>( t);
+   // printf("FlightControlsReceiver::receive: from:%s:%d (%d bytes): ", sourceAddress.c_str(), sourcePort, numBytesReceived);
+    // for ( int i=0; i<numBytesReceived; i++ )
+    // {
+    //     unsigned char c = buffer[i];
+    //     printf( "%x", c );
+    // } 
+    // printf("\n");
 
-
-    printf("==> !!!%f!!! from:%s:%d (%d bytes): ", f, sourceAddress.c_str(), sourcePort, numBytesReceived);
-    for ( int i=0; i<numBytesReceived; i++ )
-    {
-        unsigned char c = buffer[i];
-        printf( "%x", c );
-    } 
-     printf("\n");
 /*    if ( numBytesReceived==0 )
     {
         return false;
     }
 */
     bool deserializedOK = FlightControlsReceiver::deserializeFlightControls( buffer, numBytesReceived, flightControls );
-
-printf("%f !!! \n", flightControls.throttle);
     memset( buffer, 0, bufferSize );
    
     return deserializedOK;
@@ -64,16 +58,11 @@ bool FlightControlsReceiver::deserializeFlightControls( char* buffer, unsigned i
     int floatSize = sizeof(float);
     //int doubleSize = sizeof(double);
 
- // TODO: make sure we don't go too far!
+    // TODO: make sure we don't go too far!
     int offset = 0;
-    float value = 0.f;
-    memcpy( &value, buffer, 4 );
-    flightControls.throttle = value;
-
-    // memcpy( reinterpret_cast<char*>(&flightControls.throttle), buffer+offset, floatSize ); 
-    // offset+=floatSize;         
-    // memcpy( reinterpret_cast<char*>(&flightControls.rudder), buffer+offset, floatSize ); 
-    // offset+=floatSize;
+    memcpy( reinterpret_cast<char*>(&flightControls.throttle), buffer+offset, floatSize ); 
+    offset+=floatSize;
+    memcpy( reinterpret_cast<char*>(&flightControls.rudder), buffer+offset, floatSize ); 
   
     return true;
 }

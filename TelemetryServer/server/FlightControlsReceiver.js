@@ -15,4 +15,9 @@ var FlightControlsReceiver = function(websocketConnection) {
     this._onFlightControlsReceived = null;
 };
 
+FlightControlsReceiver.prototype.dispose = function()
+{
+    console.log("FlightControlsReceiver.dispose: needs to remove listener from connection");
+};
+
 exports.FlightControlsReceiver = FlightControlsReceiver;
