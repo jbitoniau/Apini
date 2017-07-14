@@ -8,7 +8,7 @@ function GamepadFlightControlsProvider() {
     });
 
     this._gamepadIndex = -1;
-    this._deadZoneRadius = 0.22;
+    this._deadZoneRadius = 0.2;
 }
 
 GamepadFlightControlsProvider.prototype.update = function() {
@@ -49,9 +49,11 @@ GamepadFlightControlsProvider.prototype.update = function() {
     if (axes[1]) {
         y1 = -1 * axes[1];
     }
-    var pos1 = { x: x1, y: y1 }; //GamepadFlightControlsProvider._applyDeadZoneRadius( this._deadZoneRadius, x1, y1 );
-    this._flightControls.throttle = pos1.y + 0.5;
-    this._flightControls.rudder = pos1.x;
+    var position1 = { x: x1, y: y1 }; 
+    position1 = GamepadFlightControlsProvider._applyDeadZoneRadius( this._deadZoneRadius, position1 );
+
+    this._flightControls.throttle = position1.y + 0.5;
+    this._flightControls.rudder = position1.x;
 
     // Camera stick
     /* var xcam = 0;
@@ -80,20 +82,15 @@ GamepadFlightControlsProvider.prototype.update = function() {
     }*/
 };
 
-GamepadFlightControlsProvider._applyDeadZoneRadius = function(deadZoneRadius, x, y) {
-    var radius = Math.sqrt(x * x + y * y);
-    if (radius >= deadZoneRadius) {
-        console.log('TODO');
-        throw new Error();
-        //pos.setLength( (l - this._deadZoneRadius) / (1 - this._deadZoneRadius) );
-    } else {
-        x = 0;
-        y = 0;
+GamepadFlightControlsProvider._applyDeadZoneRadius = function(deadZoneRadius, position) {
+    var result = {x:0, y:0};
+    var d = Math.sqrt(position.x * position.x + position.y * position.y);
+    if (d >= deadZoneRadius) {
+        var d2 = (d - deadZoneRadius) / (1 - deadZoneRadius);
+        result.x = (position.x / d) * d2;
+        result.y = (position.y / d) * d2;
     }
-    return {
-        x: x,
-        y: y
-    };
+    return result;
 };
 
 GamepadFlightControlsProvider._getFirstAvailableGamepadIndex = function() {
