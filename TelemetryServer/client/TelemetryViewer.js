@@ -168,12 +168,9 @@ function TelemetryViewer(canvas) {
         function() {
             gamepadFlightControlsProvider.update();
             var flightControls = gamepadFlightControlsProvider.flightControls;
-            var t = MathExtra.roundValueTo(flightControls.throttle, 0.01);
-            var r = MathExtra.roundValueTo(flightControls.rudder, 0.01);
-            console.log('t:' + t + ' r:' + r);
-
             if (this._socket.readyState === 1) {
-                this._socket.send(JSON.stringify({ t: t, r: r }));
+                var jsonString = JSON.stringify(flightControls);
+                this._socket.send(jsonString);
             }
         }.bind(this),
         20

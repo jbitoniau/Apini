@@ -25,17 +25,82 @@ FlightControlsSender.prototype.dispose = function() {
 };
 
 FlightControlsSender.prototype.send = function(flightControls) {
-    var message = 'Hello!';
-    var buffer = new Buffer(message);
+    
+    var uint8Array = new Uint8Array(512);
+    var dataView = new DataView(uint8Array.buffer);
 
-    this._udpSocket.send(buffer, 0, message.length, this._remotePort, this._remoteAddress, function(err, bytes) {
+    var offset = 0;
+    dataView.setFloat32(offset, flightControls.throttle, true);     // true for little endian!!! 
+    offset+=4;
+    dataView.setFloat32(offset, flightControls.rudder, true); 
+    offset+=4;
+
+    var txt = "";
+    for ( var i=0; i<offset; i++ )
+    {
+        txt += uint8Array[i].toString(16);// + "-";
+    }
+
+    var buffer = Buffer.from(uint8Array);       // There must be ways to avoid this copy here...
+    console.log('FlightControlsSender: to ' + this._remoteAddress + ':' + this._remotePort + ": " + txt );//JSON.stringify(flightControls));
+    this._udpSocket.send(buffer, 0, offset, this._remotePort, this._remoteAddress, function(err, bytes) {
+             if (err) {
+            console.warn('FlightControlsSender: error while sending data');
+        }
+        // close?
+    });
+
+// var buffer = new Buffer("ABCDEFG\0");
+// console.log('FlightControlsSender: to ' + this._remoteAddress + ':' + this._remotePort + " message:" + buffer.toString() );//JSON.stringify(flightControls));
+// this._udpSocket.send(buffer, 0, buffer.length, this._remotePort, this._remoteAddress, function(err, bytes) {
+//          if (err) {
+//             console.warn('FlightControlsSender: error while sending data');
+//         }
+//         // close?
+//     });
+
+// //OK
+// var uint8Array = new Uint8Array(8);
+// var dataView = new DataView(uint8Array.buffer);
+// for ( var i=0; i<uint8Array.length; i++)
+// {
+//     dataView.setUint8(i, i);
+// }
+// var buffer = Buffer.from(uint8Array);       // There must be ways to avoid this copy here...
+// console.log('FlightControlsSender: to ' + this._remoteAddress + ':' + this._remotePort );//JSON.stringify(flightControls));
+// this._udpSocket.send(buffer, 0, buffer.length, this._remotePort, this._remoteAddress, function(err, bytes) {
+//          if (err) {
+//             console.warn('FlightControlsSender: error while sending data');
+//         }
+//         // close?
+//     });
+
+
+return;
+
+    var buffer = new Buffer(512);
+    var uint8Array = new Uint8Array(buffer);
+    var dataView = new DataView(uint8Array.buffer);
+    var offset = 0;
+    dataView.setFloat32(offset, flightControls.throttle); 
+    offset+=4;
+    dataView.setFloat32(offset, flightControls.rudder); 
+    offset+=4;
+
+    this._udpSocket.send(buffer, 0, offset, this._remotePort, this._remoteAddress, function(err, bytes) {
         if (err) {
             console.warn('FlightControlsSender: error while sending data');
         }
         // close?
     });
 
-    console.log('UDP message sent to ' + this._remoteAddress + ':' + this._remotePort);
+    var txt = "";
+    for ( var i=0; i<offset; i++ )
+    {
+        txt += uint8Array[i] + "-";
+    }
+
+    console.log('FlightControlsSender: to ' + this._remoteAddress + ':' + this._remotePort + " message:" + txt );//JSON.stringify(flightControls));
 };
 
 /*var uint8Array = new Uint8Array(message);

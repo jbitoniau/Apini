@@ -3,6 +3,7 @@
 function FlightControls() {
     var throttle = 0;
     Object.defineProperty(this, 'throttle', {
+        enumerable: true,
         get: function() {
             return throttle;
         },
@@ -15,6 +16,7 @@ function FlightControls() {
 
     var rudder = 0;
     Object.defineProperty(this, 'rudder', {
+        enumerable: true,
         get: function() {
             return rudder;
         },

@@ -9,8 +9,8 @@ var websocket = require('websocket'); // don't forget to run "npm install websoc
 
 var telemetryReceiverMod = require('./server/TelemetryReceiver');
 var telemetrySenderMod = require('./server/TelemetrySender');
+var flightControlsReceiverMod = require('./server/FlightControlsReceiver');
 var flightControlsSenderMod = require('./server/FlightControlsSender');
-
 
 /*
     TelemetryServer
@@ -40,12 +40,18 @@ function TelemetryServer() {
         console.log('HTTP server listening');
     });
 
-this._flightControls = { txt:'toto' }; 
-this._flightControlsSender = new flightControlsSenderMod.FlightControlsSender();
-setInterval( function() {
-    this._flightControlsSender.send( this._flightControls );
-}.bind(this), 2000 );
+    // FLIGHT CONTROLS!!!
+    this._flightControlsReceiver = null;
+    this._flightControlsSender = null;//
 
+    this._flightControlsSender = new flightControlsSenderMod.FlightControlsSender();
+    setInterval( function(){
+        var flightControls = {
+            throttle:0.2,
+            rudder:0.1
+        };
+        this._flightControlsSender.send(flightControls);
+    }.bind(this), 2000 );
 
     // Create Websocket server
     this._websocketServer = new websocket.server({
@@ -56,12 +62,23 @@ setInterval( function() {
         function(request) {
             var websocketConnection = request.accept(null, request.origin);
 
-            // TEMP! TEMP!
-            // websocketConnectionelemetrySamplesToSend.on('message', function(message) {
-            //  console.log('Received ' + message.type + ' message:' + message.utf8Data);
-            // });
-            // TEMP! TEMP!
+            /*if ( !this._flightControlsReceiver )
+            {
+                console.log("CREATING FlightControlsReceiver+Sender");
+                this._flightControlsReceiver = new flightControlsReceiverMod.FlightControlsReceiver(websocketConnection);
+                this._flightControlsReceiver._onFlightControlsReceived = function( flightControls ) {
+                    this._flightControlsSender.send(flightControls);
+                }.bind(this);
 
+                setInterval( function(){
+                    var telemetrySample = {
+                        throttle:0.2,
+                        rudder:0.1
+                    };
+                    telemetrySender.addTelemetrySampleToSend(telemetrySample);
+                }, 1000 );
+            }*/
+            
             // Create a new TelemetrySender for this websocket connection
             var telemetrySender = new telemetrySenderMod.TelemetrySender(websocketConnection);
 
