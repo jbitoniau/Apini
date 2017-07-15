@@ -24,6 +24,14 @@ FlightControlsSender.prototype.dispose = function() {
     // CLOSE SOCKET!
 };
 
+function toBuffer(ab) {
+    var buf = new Buffer(ab.byteLength);
+    var view = new Uint8Array(ab);
+    for (var i = 0; i < buf.length; ++i) {
+        buf[i] = view[i];
+    }
+    return buf;
+}
 FlightControlsSender.prototype.send = function(flightControls) {
     
     var uint8Array = new Uint8Array(512);
@@ -38,7 +46,7 @@ FlightControlsSender.prototype.send = function(flightControls) {
     dataView.setFloat32(offset, flightControls.ailerons, true); 
     offset+=4;
 
-    var buffer = Buffer.from(uint8Array);       // There must be ways to avoid this copy here...
+    var buffer = toBuffer(uint8Array); //Buffer.from(uint8Array);       // There must be ways to avoid this copy here...
     this._udpSocket.send(buffer, 0, offset, this._remotePort, this._remoteAddress, function(err, bytes) {
         if (err) {
             console.warn('FlightControlsSender: error while sending data');
