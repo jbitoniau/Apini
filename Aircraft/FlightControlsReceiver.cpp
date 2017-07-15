@@ -1,6 +1,7 @@
 #include "FlightControlsReceiver.h"
 
 #include <cstdint>
+#include <cstring>
 
 FlightControlsReceiver::FlightControlsReceiver()
 {

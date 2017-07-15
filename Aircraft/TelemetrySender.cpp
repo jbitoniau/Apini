@@ -1,4 +1,5 @@
 #include "TelemetrySender.h"
+#include <cstring>
 
 TelemetrySender::TelemetrySender()
 {
