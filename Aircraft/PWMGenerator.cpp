@@ -1,5 +1,8 @@
 #include "PWMGenerator.h"
 
+#include <stdio.h>
+#include <cstdlib>      // for EXIT_SUCCESS 
+
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
 
 PWMGenerator::PWMGenerator()
