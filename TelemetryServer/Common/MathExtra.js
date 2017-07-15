@@ -22,3 +22,7 @@ MathExtra.roundValueTo = function(value, step) {
     }
     return v;
 };
+
+if ( typeof module!=="undefined" && ('exports' in module) ){
+    exports.MathExtra = MathExtra;
+}

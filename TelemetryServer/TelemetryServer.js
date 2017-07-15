@@ -7,17 +7,18 @@ var url = require('url');
 var fs = require('fs');
 var websocket = require('websocket'); // don't forget to run "npm install websocket"
 
-var telemetryReceiverMod = require('./Server/TelemetryReceiver');
-var telemetrySenderMod = require('./Server/TelemetrySender');
-var flightControlsReceiverMod = require('./Server/FlightControlsReceiver');
-var flightControlsSenderMod = require('./Server/FlightControlsSender');
+var TelemetryReceiver = require('./Server/TelemetryReceiver').TelemetryReceiver;
+var TelemetrySender = require('./Server/TelemetrySender').TelemetrySender;
+var FlightControlsReceiver = require('./Server/FlightControlsReceiver').FlightControlsReceiver;
+var FlightControlsSender = require('./Server/FlightControlsSender').FlightControlsSender;
 
 /*
     TelemetryServer
 */
 function TelemetryServer() {
+
     // Create TelemetryReceiver working on the UDP socket
-    this._telemetryReceiver = new telemetryReceiverMod.TelemetryReceiver();
+    this._telemetryReceiver = new TelemetryReceiver();
 
     // Prepare TelemetrySenders array for incoming websocket connections
     this._telemetrySenders = [];
@@ -42,12 +43,13 @@ function TelemetryServer() {
 
     // Flight controls receiver and sender
     this._flightControlsReceiver = null;
-    this._flightControlsSender = new flightControlsSenderMod.FlightControlsSender();
+    this._flightControlsSender = new FlightControlsSender();
 
     // Create Websocket server
     this._websocketServer = new websocket.server({
         httpServer: this._httpServer
     });
+
     this._websocketServer.on(
         'request',
         function(request) {
@@ -56,14 +58,14 @@ function TelemetryServer() {
             // TODO: this needs to be less hacky...
             if (!this._flightControlsReceiver) {
                 console.log('TelemetryServer: using this new connection to create FlightControlsReceiver');
-                this._flightControlsReceiver = new flightControlsReceiverMod.FlightControlsReceiver(websocketConnection);
+                this._flightControlsReceiver = new FlightControlsReceiver(websocketConnection);
                 this._flightControlsReceiver._onFlightControlsReceived = function(flightControls) {
                     this._flightControlsSender.send(flightControls);
                 }.bind(this);
             }
 
             // Create a new TelemetrySender for this websocket connection
-            var telemetrySender = new telemetrySenderMod.TelemetrySender(websocketConnection);
+            var telemetrySender = new TelemetrySender(websocketConnection);
 
             // Whenever we get a new telemetry sample from the TelemetryReceiver, give it to the TelemetrySender for sending
             var onTelemetrySampleReadyHandler = function(telemetrySample) {

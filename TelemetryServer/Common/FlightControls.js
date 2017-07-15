@@ -1,5 +1,9 @@
 'use strict';
 
+if ( typeof require==="function" ) {
+    var MathExtra = require('./MathExtra').MathExtra;
+}
+
 function FlightControls() {
     var throttle = 0;
     Object.defineProperty(this, 'throttle', {
@@ -90,3 +94,8 @@ FlightControls.prototype.combine = function(other) {
     this.elevators = MathExtra.clamp(this.elevators + other.elevators, -0.5, 0.5);
     this.ailerons = MathExtra.clamp(this.ailerons + other.ailerons, -0.5, 0.5);
 };
+
+if ( typeof module!=="undefined" && ('exports' in module) ){
+    exports.FlightControls = FlightControls;
+}
+
