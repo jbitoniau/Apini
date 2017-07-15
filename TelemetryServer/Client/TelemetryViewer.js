@@ -176,31 +176,9 @@ TelemetryViewer.prototype._onSocketClose = function(/*??*/) {
 
 TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySamples) {
     for (var i = telemetrySamples.length - 1; i >= 0; i--) {
-        var dataPoint = telemetrySamples[i];
-        this._graphData.splice(0, 0, {
-            // use directly the dataPoint... need xPropertyName though for rendering...
-            x: dataPoint.timestamp,
-
-            accelerationX: dataPoint.accelerationX,
-            accelerationY: dataPoint.accelerationY,
-            accelerationZ: dataPoint.accelerationZ,
-            angularSpeedX: dataPoint.angularSpeedX,
-            angularSpeedY: dataPoint.angularSpeedY,
-            angularSpeedZ: dataPoint.angularSpeedZ,
-            temperature: dataPoint.temperature,
-
-            magneticHeadingX: dataPoint.magneticHeadingX,
-            magneticHeadingY: dataPoint.magneticHeadingY,
-            magneticHeadingZ: dataPoint.magneticHeadingZ,
-
-            temperature2: dataPoint.temperature2,
-            pressure: dataPoint.pressure,
-
-            throttle: dataPoint.throttle,
-            rudder: dataPoint.rudder,
-            elevators: dataPoint.elevators,
-            ailerons: dataPoint.ailerons
-        });
+        var telemetrySample = telemetrySamples[i];
+        telemetrySample.x = telemetrySample.timestamp;   // The grapher requires an 'x' property 
+        this._graphData.splice(0, 0, telemetrySample);
     }
     this._render();
 };
