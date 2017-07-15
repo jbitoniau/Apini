@@ -7,10 +7,10 @@ var url = require('url');
 var fs = require('fs');
 var websocket = require('websocket'); // don't forget to run "npm install websocket"
 
-var telemetryReceiverMod = require('./server/TelemetryReceiver');
-var telemetrySenderMod = require('./server/TelemetrySender');
-var flightControlsReceiverMod = require('./server/FlightControlsReceiver');
-var flightControlsSenderMod = require('./server/FlightControlsSender');
+var telemetryReceiverMod = require('./Server/TelemetryReceiver');
+var telemetrySenderMod = require('./Server/TelemetrySender');
+var flightControlsReceiverMod = require('./Server/FlightControlsReceiver');
+var flightControlsSenderMod = require('./Server/FlightControlsSender');
 
 /*
     TelemetryServer
@@ -150,7 +150,7 @@ TelemetryServer._serveFile = function(filename, res) {
     }
     console.log('Serving file: ' + filename + ' as ' + contentType);
 
-    filename = 'client/' + filename;
+    filename = 'Client/' + filename;
 
     fs.readFile(filename, 'utf8', function(err, data) {
         if (err) {
