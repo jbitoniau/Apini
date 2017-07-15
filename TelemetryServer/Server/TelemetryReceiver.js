@@ -47,6 +47,8 @@ TelemetryReceiver.prototype._onUDPSocketMessage = function(message, remote) {
     //console.log(text);
 
     var telemetrySample = {
+        timestamp: 0,
+
         accelerationX: 0,
         accelerationY: 0,
         accelerationZ: 0,
@@ -62,11 +64,17 @@ TelemetryReceiver.prototype._onUDPSocketMessage = function(message, remote) {
         temperature2: 0,
         pressure: 0,
 
-        timestamp: 0
+        throttle: 0,
+        rudder: 0,
+        elevators: 0,
+        ailerons: 0
     };
 
     var dataView = new DataView(uint8Array.buffer);
     var offset = 0;
+    telemetrySample.timestamp = dataView.getUint32(offset, true);
+    offset += 4;
+
     telemetrySample.accelerationX = dataView.getFloat64(offset, true);
     offset += 8;
     telemetrySample.accelerationY = dataView.getFloat64(offset, true);
@@ -94,7 +102,13 @@ TelemetryReceiver.prototype._onUDPSocketMessage = function(message, remote) {
     telemetrySample.pressure = dataView.getFloat32(offset, true);
     offset += 4;
 
-    telemetrySample.timestamp = dataView.getUint32(offset, true);
+    telemetrySample.throttle = dataView.getFloat32(offset, true);
+    offset += 4;
+    telemetrySample.rudder = dataView.getFloat32(offset, true);
+    offset += 4;
+    telemetrySample.elevators = dataView.getFloat32(offset, true);
+    offset += 4;
+    telemetrySample.ailerons = dataView.getFloat32(offset, true);
     offset += 4;
 
     for (var i = 0; i < this._onTelemetrySampleReadyListeners.length; ++i) {

@@ -25,13 +25,17 @@ int main( int argc, char* argv[] )
     printf("Aircraft started\n");
     while (true)
     {   
-        TelemetryData telemetryData = telemetryProvider.getTelemetryData();
-        telemetrySender.send( telemetryData );
-
         if ( flightControlsReceiver.receive(flightControls) )
         {
             printf("throttle:%f rudder:%f elevators:%f ailerons:%f\n", flightControls.throttle, flightControls.rudder, flightControls.elevators, flightControls.ailerons);
-        } 
+        }
+
+        TelemetryData telemetryData = telemetryProvider.getTelemetryData();
+        telemetryData.throttle = flightControls.throttle;
+        telemetryData.rudder = flightControls.rudder;
+        telemetryData.elevators = flightControls.elevators;
+        telemetryData.ailerons = flightControls.ailerons;
+        telemetrySender.send( telemetryData );
 
         int loopIndex = static_cast<int>( std::floor( Loco::Time::getTimeAsMilliseconds()/framePeriod) );
         while ( loopIndex==lastLoopIndex )

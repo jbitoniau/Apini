@@ -6,6 +6,7 @@ class TelemetryData
 {
 public:
     TelemetryData():
+        timestamp(0),
         accelerationX(0.0),
         accelerationY(0.0),
         accelerationZ(0.0),
@@ -18,9 +19,14 @@ public:
         magneticHeadingZ(0.0),
         temperature2(21.f),
         pressure(0.f),
-        timestamp(0)
+        throttle(0),
+        rudder(0),
+        elevators(0),
+        ailerons(0)
     {
     }
+    
+    std::uint32_t   timestamp;
     
     double          accelerationX;          // In Gs
     double          accelerationY;
@@ -37,5 +43,8 @@ public:
     float           temperature2;           // In degrees celsius
     float           pressure;               // In HPa
     
-    std::uint32_t   timestamp;
+    float           throttle;
+    float           rudder;
+    float           elevators;
+    float           ailerons;
 };

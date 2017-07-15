@@ -30,6 +30,8 @@ int TelemetrySender::serializeTelemetryData( const TelemetryData& telemetryData,
     int doubleSize = sizeof(double);
 
     int offset = 0;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.timestamp), int32Size ); offset+=int32Size;
+    
     memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.accelerationX), doubleSize ); offset+=doubleSize;
     memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.accelerationY), doubleSize ); offset+=doubleSize;
     memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.accelerationZ), doubleSize ); offset+=doubleSize;
@@ -45,6 +47,10 @@ int TelemetrySender::serializeTelemetryData( const TelemetryData& telemetryData,
     memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.temperature2), floatSize ); offset+=floatSize;
     memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.pressure), floatSize ); offset+=floatSize;
     
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.timestamp), int32Size ); offset+=int32Size;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.throttle), floatSize ); offset+=floatSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.rudder), floatSize ); offset+=floatSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.elevators), floatSize ); offset+=floatSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.ailerons), floatSize ); offset+=floatSize;
+    
     return offset;
 }

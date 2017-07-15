@@ -88,6 +88,30 @@ function TelemetryViewer(canvas) {
             y: 1005,
             width: initialWidth,
             height: 20
+        },
+        throttle: {
+            x: initialX,
+            y: -0.2,
+            width: initialWidth,
+            height: 1.4
+        },
+        rudder: {
+            x: initialX,
+            y: -0.7,
+            width: initialWidth,
+            height: 1.4
+        },
+        elevators: {
+            x: initialX,
+            y: -0.7,
+            width: initialWidth,
+            height: 1.4
+        },
+        ailerons: {
+            x: initialX,
+            y: -0.7,
+            width: initialWidth,
+            height: 1.4
         }
     };
 
@@ -267,7 +291,12 @@ TelemetryViewer.prototype._onSocketMessage = function(message) {
             magneticHeadingZ: dataPoint.magneticHeadingZ,
 
             temperature2: dataPoint.temperature2,
-            pressure: dataPoint.pressure
+            pressure: dataPoint.pressure,
+
+            throttle: dataPoint.throttle,
+            rudder: dataPoint.rudder,
+            elevators: dataPoint.elevators,
+            ailerons: dataPoint.ailerons
         });
     }
     this._render();
