@@ -36,6 +36,9 @@ SET	(	SOURCES
 		FlightControlsReceiver.h
 		FlightControlsReceiver.cpp
 
+		PWMGenerator.h
+		PWMGenerator.cpp
+		
 		Main.cpp
 	)
 
