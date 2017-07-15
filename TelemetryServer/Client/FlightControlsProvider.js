@@ -1,6 +1,6 @@
 'use strict';
 
-function GamepadFlightControlsProvider() {
+function FlightControlsProvider() {
     this._flightControls = new FlightControls();
     Object.defineProperty(this, 'flightControls', {
         writable: false,
@@ -11,10 +11,12 @@ function GamepadFlightControlsProvider() {
     this._deadZoneRadius = 0.2;
 }
 
-GamepadFlightControlsProvider.prototype.update = function() {
+FlightControlsProvider.prototype.dispose = function() {};
+
+FlightControlsProvider.prototype.update = function() {
     if (this._gamepadIndex === -1) {
         // Check whether there's a gamepad we can use
-        this._gamepadIndex = GamepadFlightControlsProvider._getFirstAvailableGamepadIndex();
+        this._gamepadIndex = FlightControlsProvider._getFirstAvailableGamepadIndex();
         if (this._gamepadIndex === -1) {
             // Still none available
             return;
@@ -22,10 +24,10 @@ GamepadFlightControlsProvider.prototype.update = function() {
     }
 
     // Check whether the gamepad we're using is still there
-    var gamepad = GamepadFlightControlsProvider._getGamepadByIndex(this._gamepadIndex);
+    var gamepad = FlightControlsProvider._getGamepadByIndex(this._gamepadIndex);
     if (!gamepad) {
         // If there's another one available, use it
-        this._gamepadIndex = GamepadFlightControlsProvider._getFirstAvailableGamepadIndex();
+        this._gamepadIndex = FlightControlsProvider._getFirstAvailableGamepadIndex();
         if (this._gamepadIndex === -1) {
             // None available, reset the game controls
             this._gamepadIndex = -1;
@@ -36,7 +38,7 @@ GamepadFlightControlsProvider.prototype.update = function() {
 
         // Use the new one
         console.warn('Switching to a different gamepad for flight controls');
-        gamepad = GamepadFlightControlsProvider._getGamepadByIndex(this._gamepadIndex);
+        gamepad = FlightControlsProvider._getGamepadByIndex(this._gamepadIndex);
     }
 
     // Get stick positions
@@ -58,9 +60,9 @@ GamepadFlightControlsProvider.prototype.update = function() {
     }
 
     // Apply dead zone to both stick positions
-    //console.log("GamepadFlightControlsProvider.update: stick1Position: " + JSON.stringify(stick1Position) + " stick2Position:" + JSON.stringify(stick2Position) );
-    stick1Position = GamepadFlightControlsProvider._applyDeadZoneRadius(this._deadZoneRadius, stick1Position);
-    stick2Position = GamepadFlightControlsProvider._applyDeadZoneRadius(this._deadZoneRadius, stick2Position);
+    //console.log("FlightControlsProvider.update: stick1Position: " + JSON.stringify(stick1Position) + " stick2Position:" + JSON.stringify(stick2Position) );
+    stick1Position = FlightControlsProvider._applyDeadZoneRadius(this._deadZoneRadius, stick1Position);
+    stick2Position = FlightControlsProvider._applyDeadZoneRadius(this._deadZoneRadius, stick2Position);
 
     // Convert stick positions to flight controls
     this._flightControls.throttle = MathExtra.clamp(stick1Position.y + 0.5, 0, 1);
@@ -69,7 +71,7 @@ GamepadFlightControlsProvider.prototype.update = function() {
     this._flightControls.ailerons = MathExtra.clamp(stick2Position.x, -0.5, 0.5);
 };
 
-GamepadFlightControlsProvider._applyDeadZoneRadius = function(deadZoneRadius, position) {
+FlightControlsProvider._applyDeadZoneRadius = function(deadZoneRadius, position) {
     var result = { x: 0, y: 0 };
     var d = Math.sqrt(position.x * position.x + position.y * position.y);
     if (d >= deadZoneRadius) {
@@ -80,8 +82,8 @@ GamepadFlightControlsProvider._applyDeadZoneRadius = function(deadZoneRadius, po
     return result;
 };
 
-GamepadFlightControlsProvider._getFirstAvailableGamepadIndex = function() {
-    var gamepads = GamepadFlightControlsProvider._getGamepads();
+FlightControlsProvider._getFirstAvailableGamepadIndex = function() {
+    var gamepads = FlightControlsProvider._getGamepads();
     for (var i = 0; i < gamepads.length; i++) {
         if (gamepads[i]) {
             return gamepads[i].index;
@@ -90,13 +92,13 @@ GamepadFlightControlsProvider._getFirstAvailableGamepadIndex = function() {
     return -1;
 };
 
-GamepadFlightControlsProvider._getGamepadByIndex = function(index) {
-    var gamepads = GamepadFlightControlsProvider._getGamepads();
+FlightControlsProvider._getGamepadByIndex = function(index) {
+    var gamepads = FlightControlsProvider._getGamepads();
     var gamepad = gamepads[index];
     return gamepad;
 };
 
-GamepadFlightControlsProvider._getGamepads = function() {
+FlightControlsProvider._getGamepads = function() {
     var gamepads = navigator.getGamepads ? navigator.getGamepads() : navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : [];
     return gamepads;
 };

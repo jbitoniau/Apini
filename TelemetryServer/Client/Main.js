@@ -45,22 +45,22 @@ function Main() {
 		var autoscroll = !telemetryViewer.getAutoscroll();
 		telemetryViewer.setAutoscroll(autoscroll);
 	};
-	telemetryViewer._onAutoscrollChanged = function() {
+	telemetryViewer.onAutoscrollChanged = function() {
 		var autoscroll = telemetryViewer.getAutoscroll();
 		if (autoscroll) autoscrollButton.className = 'roundedButtonToggled';
 		else autoscrollButton.className = 'roundedButton';
 	};
-	telemetryViewer._onAutoscrollChanged();
+	telemetryViewer.onAutoscrollChanged();
 
 	// Connection indicator
 	var connectionIndicator = document.getElementById('connectionIndicator');
-	telemetryViewer._onConnectionOpen = function() {
+	telemetryViewer.onConnectionOpen = function() {
 		connectionIndicator.style.backgroundColor = 'green';
 	};
-	telemetryViewer._onConnectionError = function() {
+	telemetryViewer.onConnectionError = function() {
 		connectionIndicator.style.backgroundColor = 'red';
 	};
-	telemetryViewer._onConnectionClose = function() {
+	telemetryViewer.onConnectionClose = function() {
 		connectionIndicator.style.backgroundColor = 'grey';
 	};
 }
