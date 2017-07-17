@@ -38,6 +38,9 @@ SET	(	SOURCES
 
 		PWMGenerator.h
 		PWMGenerator.cpp
+
+		Aircraft.h
+		Aircraft.cpp
 		
 		Main.cpp
 	)
