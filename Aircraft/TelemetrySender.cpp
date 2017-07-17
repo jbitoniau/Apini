@@ -16,42 +16,47 @@ TelemetrySender::~TelemetrySender()
     delete[] buffer;
 }
 
-bool TelemetrySender::send( const TelemetryData& telemetryData ) 
+bool TelemetrySender::send( std::uint32_t timestamp, const FlightControls& flightControls, const SensorsSample& sensorsSample, const FlightParameters& flightParameters ) 
 {
-    int numBytesToSend = serializeTelemetryData( telemetryData, buffer );   
+    int numBytesToSend = serializeTelemetry( timestamp, flightControls, sensorsSample, flightParameters, buffer );   
     int numBytesSent = socket->send( buffer, numBytesToSend, "127.0.0.1", remotePort );
     bool result = (numBytesToSend==numBytesSent);
     return result;
 }
 
-int TelemetrySender::serializeTelemetryData( const TelemetryData& telemetryData, char* buffer )
+int TelemetrySender::serializeTelemetry( std::uint32_t timestamp, const FlightControls& flightControls, const SensorsSample& sensorsSample, const FlightParameters& flightParameters, char* buffer )
 {
     int int32Size = sizeof(std::uint32_t);
     int floatSize = sizeof(float);
     int doubleSize = sizeof(double);
 
     int offset = 0;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.timestamp), int32Size ); offset+=int32Size;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&timestamp), int32Size ); offset+=int32Size;
     
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.accelerationX), doubleSize ); offset+=doubleSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.accelerationY), doubleSize ); offset+=doubleSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.accelerationZ), doubleSize ); offset+=doubleSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.angularSpeedX), doubleSize ); offset+=doubleSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.angularSpeedY), doubleSize ); offset+=doubleSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.angularSpeedZ), doubleSize ); offset+=doubleSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.temperature), floatSize ); offset+=floatSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.accelerationX), doubleSize ); offset+=doubleSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.accelerationY), doubleSize ); offset+=doubleSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.accelerationZ), doubleSize ); offset+=doubleSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.angularSpeedX), doubleSize ); offset+=doubleSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.angularSpeedY), doubleSize ); offset+=doubleSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.angularSpeedZ), doubleSize ); offset+=doubleSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.temperature), floatSize ); offset+=floatSize;
     
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.magneticHeadingX), doubleSize ); offset+=doubleSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.magneticHeadingY), doubleSize ); offset+=doubleSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.magneticHeadingZ), doubleSize ); offset+=doubleSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.magneticHeadingX), doubleSize ); offset+=doubleSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.magneticHeadingY), doubleSize ); offset+=doubleSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.magneticHeadingZ), doubleSize ); offset+=doubleSize;
     
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.temperature2), floatSize ); offset+=floatSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.pressure), floatSize ); offset+=floatSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.temperature2), floatSize ); offset+=floatSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&sensorsSample.pressure), floatSize ); offset+=floatSize;
     
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.throttle), floatSize ); offset+=floatSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.rudder), floatSize ); offset+=floatSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.elevators), floatSize ); offset+=floatSize;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&telemetryData.ailerons), floatSize ); offset+=floatSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightControls.throttle), floatSize ); offset+=floatSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightControls.rudder), floatSize ); offset+=floatSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightControls.elevators), floatSize ); offset+=floatSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightControls.ailerons), floatSize ); offset+=floatSize;
     
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pwmMotor1), int32Size ); offset+=int32Size;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pwmMotor2), int32Size ); offset+=int32Size;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pwmMotor3), int32Size ); offset+=int32Size;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pwmMotor4), int32Size ); offset+=int32Size;
+
     return offset;
 }

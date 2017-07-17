@@ -1,4 +1,4 @@
-#include "TelemetryProvider.h"
+#include "Sensors.h"
 
 #include <stdio.h>
 #include "Platform/LocoTime.h"
@@ -34,7 +34,7 @@ double getGyroscopeHalfScaleRange( MPU6050& mpu6050 )
 }
 #endif
 
-TelemetryProvider::TelemetryProvider()
+Sensors::Sensors()
 {
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     // MPU6050
@@ -59,7 +59,7 @@ TelemetryProvider::TelemetryProvider()
 #endif
 }
 
-TelemetryProvider::~TelemetryProvider()
+Sensors::~Sensors()
 {
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     delete mpu6050;
@@ -68,9 +68,9 @@ TelemetryProvider::~TelemetryProvider()
 #endif
 }
 
-TelemetryData TelemetryProvider::getTelemetryData() const
+SensorsSample Sensors::getSensorsSample() const
 {
-    TelemetryData telemetryData;
+    SensorsSample sensorsSample;
 
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     // MPU6050
@@ -79,35 +79,32 @@ TelemetryData TelemetryProvider::getTelemetryData() const
     int16_t ax, ay, az;
     int16_t gx, gy, gz;
     mpu6050->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);       // This takes 1 or 2 ms
-    telemetryData.accelerationX = static_cast<double>(ax) * accelerometerHalfScaleRange / 32768.0;
-    telemetryData.accelerationY = static_cast<double>(ay) * accelerometerHalfScaleRange / 32768.0;
-    telemetryData.accelerationZ = static_cast<double>(az) * accelerometerHalfScaleRange / 32768.0;
-    telemetryData.angularSpeedX = static_cast<double>(gx) * gyroscopeHalfScaleRange / 32768.0;
-    telemetryData.angularSpeedY = static_cast<double>(gy) * gyroscopeHalfScaleRange / 32768.0;
-    telemetryData.angularSpeedZ = static_cast<double>(gz) * gyroscopeHalfScaleRange / 32768.0;
+    sensorsSample.accelerationX = static_cast<double>(ax) * accelerometerHalfScaleRange / 32768.0;
+    sensorsSample.accelerationY = static_cast<double>(ay) * accelerometerHalfScaleRange / 32768.0;
+    sensorsSample.accelerationZ = static_cast<double>(az) * accelerometerHalfScaleRange / 32768.0;
+    sensorsSample.angularSpeedX = static_cast<double>(gx) * gyroscopeHalfScaleRange / 32768.0;
+    sensorsSample.angularSpeedY = static_cast<double>(gy) * gyroscopeHalfScaleRange / 32768.0;
+    sensorsSample.angularSpeedZ = static_cast<double>(gz) * gyroscopeHalfScaleRange / 32768.0;
 
     int16_t t = mpu6050->getTemperature();
-    telemetryData.temperature = static_cast<float>(t)/340.f + 36.53f;
+    sensorsSample.temperature = static_cast<float>(t)/340.f + 36.53f;
         
     // HMC5883L
     int16_t mx = 0;
     int16_t my = 0;
     int16_t mz = 0;
     hmc5883l->getHeading(&mx, &my, &mz);                     // This takes 1 or 2 ms
-    telemetryData.magneticHeadingX = static_cast<double>(mx);
-    telemetryData.magneticHeadingY = static_cast<double>(my);
-    telemetryData.magneticHeadingZ = static_cast<double>(mz);
+    sensorsSample.magneticHeadingX = static_cast<double>(mx);
+    sensorsSample.magneticHeadingY = static_cast<double>(my);
+    sensorsSample.magneticHeadingZ = static_cast<double>(mz);
 
     // MS561101BA
     float temperature = 0.f;            
     float pressure = 0.f;
     ms561101ba->readValues( &pressure, &temperature );       // This takes 4 or 5 ms
-    telemetryData.temperature2 = temperature;
-    telemetryData.pressure = pressure;
+    sensorsSample.temperature2 = temperature;
+    sensorsSample.pressure = pressure;
 #endif
 
-    // Timestamp
-    telemetryData.timestamp = Loco::Time::getTimeAsMilliseconds();
-
-    return telemetryData;
+    return sensorsSample;
 }

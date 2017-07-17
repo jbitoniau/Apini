@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Platform/Platform.h"
-#include "TelemetryData.h"
+#include "SensorsSample.h"
  
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     #include "MPU6050/MPU6050.h"
@@ -9,13 +9,13 @@
     #include "MS561101BA/MS561101BA.h"
 #endif
 
-class TelemetryProvider
+class Sensors
 {
 public:
-    TelemetryProvider();
-    virtual ~TelemetryProvider();
+    Sensors();
+    virtual ~Sensors();
     
-    TelemetryData getTelemetryData() const;
+    SensorsSample getSensorsSample() const;
 
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     MPU6050*     mpu6050;

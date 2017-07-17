@@ -2,11 +2,10 @@
 
 #include <cstdint>
 
-class TelemetryData
+class SensorsSample
 {
 public:
-    TelemetryData():
-        timestamp(0),
+    SensorsSample():
         accelerationX(0.0),
         accelerationY(0.0),
         accelerationZ(0.0),
@@ -18,15 +17,9 @@ public:
         magneticHeadingY(0.0),
         magneticHeadingZ(0.0),
         temperature2(21.f),
-        pressure(0.f),
-        throttle(0),
-        rudder(0),
-        elevators(0),
-        ailerons(0)
+        pressure(0.f)
     {
     }
-    
-    std::uint32_t   timestamp;
     
     double          accelerationX;          // In Gs
     double          accelerationY;

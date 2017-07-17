@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Platform/UDPSocket.h"
-#include "TelemetryData.h"
+
+#include "FlightControls.h"
+#include "SensorsSample.h"
+#include "FlightParameters.h"
 
 class TelemetrySender
 {
@@ -9,10 +12,10 @@ public:
     TelemetrySender();
     virtual ~TelemetrySender();
 
-    bool send( const TelemetryData& telemetryData );
+    bool send( std::uint32_t timestamp, const FlightControls& flightControls, const SensorsSample& sensorsSample, const FlightParameters& flightParameters );
     
 private:
-    static int serializeTelemetryData( const TelemetryData& telemetryData, char* buffer );
+    static int serializeTelemetry( std::uint32_t timestamp, const FlightControls& flightControls, const SensorsSample& sensorsSample, const FlightParameters& flightParameters, char* buffer );
     
     Loco::UDPSocket* socket;
     const int bufferSize = 512;

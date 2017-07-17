@@ -26,11 +26,9 @@ SET	(	SOURCES
 		Platform/UDPSocket.h
 		Platform/UDPSocket.cpp
 		
-		TelemetryData.h
-		TelemetryProvider.h
-		TelemetryProvider.cpp
-		TelemetrySender.h
-		TelemetrySender.cpp
+		SensorsSample.h
+		Sensors.h
+		Sensors.cpp
 
 		FlightControls.h
 		FlightControlsReceiver.h
@@ -38,7 +36,14 @@ SET	(	SOURCES
 
 		PWMGenerator.h
 		PWMGenerator.cpp
+		FlightParameters.h
+		FlightParameters.cpp
+		FlightController.h
+		FlightController.cpp
 
+		TelemetrySender.h
+		TelemetrySender.cpp
+		
 		Aircraft.h
 		Aircraft.cpp
 		

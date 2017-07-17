@@ -111,6 +111,15 @@ TelemetryReceiver.prototype._onUDPSocketMessage = function(message, remote) {
     telemetrySample.ailerons = dataView.getFloat32(offset, true);
     offset += 4;
 
+    telemetrySample.pwmMotor1 = dataView.getUint32(offset, true);
+    offset += 4;
+    telemetrySample.pwmMotor2 = dataView.getUint32(offset, true);
+    offset += 4;
+    telemetrySample.pwmMotor3 = dataView.getUint32(offset, true);
+    offset += 4;
+    telemetrySample.pwmMotor4 = dataView.getUint32(offset, true);
+    offset += 4;
+
     for (var i = 0; i < this._onTelemetrySampleReadyListeners.length; ++i) {
         var listener = this._onTelemetrySampleReadyListeners[i];
         listener(telemetrySample);
