@@ -1,16 +1,12 @@
 #pragma once
 
+#include "Platform/Platform.h"
 #include "TelemetryData.h"
-#include "Platform.h"
  
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     #include "MPU6050/MPU6050.h"
     #include "HMC5883L/HMC5883L.h"
     #include "MS561101BA/MS561101BA.h"
-    extern "C" 
-    {
-        #include "pwm.h"
-    }
 #endif
 
 class TelemetryProvider

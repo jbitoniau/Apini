@@ -3,8 +3,8 @@
 #include <string>
 #include <cmath>        // for std::floor() & co
 
-#include "LocoTime.h"
-#include "LocoThread.h"
+#include "Platform/LocoTime.h"
+#include "Platform/LocoThread.h"
 
 #include "TelemetryProvider.h"
 #include "TelemetrySender.h"

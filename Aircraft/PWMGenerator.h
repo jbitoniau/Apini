@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Platform.h"
+#include "Platform/Platform.h"
 #include <vector>
 
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "FlightControls.h"
-#include "UDPSocket.h"
+#include "Platform/UDPSocket.h"
 
 class FlightControlsReceiver 
 {

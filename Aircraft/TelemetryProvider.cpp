@@ -1,37 +1,37 @@
 #include "TelemetryProvider.h"
 
 #include <stdio.h>
-#include "LocoTime.h"
-#include "LocoThread.h"
+#include "Platform/LocoTime.h"
+#include "Platform/LocoThread.h"
 
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
-    double getAccelerometerHalfScaleRange( MPU6050& mpu6050 )
+double getAccelerometerHalfScaleRange( MPU6050& mpu6050 )
+{
+    uint8_t scaleCode = mpu6050.getFullScaleAccelRange();
+    switch ( scaleCode )
     {
-        uint8_t scaleCode = mpu6050.getFullScaleAccelRange();
-        switch ( scaleCode )
-        {
-            case MPU6050_ACCEL_FS_2 : return 2.0;
-            case MPU6050_ACCEL_FS_4 : return 4.0;
-            case MPU6050_ACCEL_FS_8 : return 8.0;
-            case MPU6050_ACCEL_FS_16 : return 16.0;
-        }
-        printf("getAccelerometerHalfScaleRange unsupported value returned\n");
-        return 2.0;
+        case MPU6050_ACCEL_FS_2 : return 2.0;
+        case MPU6050_ACCEL_FS_4 : return 4.0;
+        case MPU6050_ACCEL_FS_8 : return 8.0;
+        case MPU6050_ACCEL_FS_16 : return 16.0;
     }
+    printf("getAccelerometerHalfScaleRange unsupported value returned\n");
+    return 2.0;
+}
 
-    double getGyroscopeHalfScaleRange( MPU6050& mpu6050 )
+double getGyroscopeHalfScaleRange( MPU6050& mpu6050 )
+{
+    uint8_t scaleCode = mpu6050.getFullScaleGyroRange();
+    switch ( scaleCode )
     {
-        uint8_t scaleCode = mpu6050.getFullScaleGyroRange();
-        switch ( scaleCode )
-        {
-            case MPU6050_GYRO_FS_250 : return 250.0;
-            case MPU6050_GYRO_FS_500 : return 500.0;
-            case MPU6050_GYRO_FS_1000 : return 1000.0;
-            case MPU6050_GYRO_FS_2000 : return 2000.0;
-        }
-        printf("getGyroscopeHalfScaleRange unsupported value returned\n");
-        return 250.0;
+        case MPU6050_GYRO_FS_250 : return 250.0;
+        case MPU6050_GYRO_FS_500 : return 500.0;
+        case MPU6050_GYRO_FS_1000 : return 1000.0;
+        case MPU6050_GYRO_FS_2000 : return 2000.0;
     }
+    printf("getGyroscopeHalfScaleRange unsupported value returned\n");
+    return 250.0;
+}
 #endif
 
 TelemetryProvider::TelemetryProvider()

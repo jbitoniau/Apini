@@ -17,14 +17,14 @@ ENDIF()
 
 ADD_DEFINITIONS(-std=c++11)   # for <cstdint> on Raspberry Pi
 SET	(	SOURCES
-		Platform.h
-		Platform.cpp
-		LocoTime.h
-		LocoTime.cpp
-		LocoThread.h
-		LocoThread.cpp
-		UDPSocket.h
-		UDPSocket.cpp
+		Platform/Platform.h
+		Platform/Platform.cpp
+		Platform/LocoTime.h
+		Platform/LocoTime.cpp
+		Platform/LocoThread.h
+		Platform/LocoThread.cpp
+		Platform/UDPSocket.h
+		Platform/UDPSocket.cpp
 		
 		TelemetryData.h
 		TelemetryProvider.h
