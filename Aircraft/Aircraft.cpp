@@ -22,13 +22,22 @@ void Aircraft::run()
     int framePeriod = 20;
     int startTime = Loco::Time::getTimeAsMilliseconds();
     int lastLoopIndex = static_cast<int>( std::floor( startTime/framePeriod) );
-
+  
     FlightControlsReceiver flightControlsReceiver;
-    Sensors sensors;
-    FlightController flightController;
-    TelemetrySender telemetrySender;
-    PWMGenerator pwmGenerator;
     
+    Sensors sensors;
+    
+    FlightController flightController(1000000, 2000000);
+    
+    std::vector<unsigned int> pwmChannelGPIOs;
+    pwmChannelGPIOs.push_back( 25 );
+    pwmChannelGPIOs.push_back( 24 );
+    pwmChannelGPIOs.push_back( 23 );
+    pwmChannelGPIOs.push_back( 22 );
+    PWMGenerator pwmGenerator(1000000, 2000000, pwmChannelGPIOs);
+  
+    TelemetrySender telemetrySender;
+        
     printf("Aircraft started\n");
     std::uint32_t timestamp = 0;
     while (true)
@@ -38,7 +47,7 @@ void Aircraft::run()
         FlightControls flightControls;
         if ( flightControlsReceiver.receive(flightControls) )
         {
-            printf("throttle:%f rudder:%f elevators:%f ailerons:%f\n", flightControls.throttle, flightControls.rudder, flightControls.elevators, flightControls.ailerons);
+            //printf("throttle:%f rudder:%f elevators:%f ailerons:%f\n", flightControls.throttle, flightControls.rudder, flightControls.elevators, flightControls.ailerons);
         }
 
         SensorsSample sensorsSample;
@@ -47,10 +56,10 @@ void Aircraft::run()
         FlightParameters flightParameters;
         flightParameters = flightController.update( flightControls, sensorsSample );
 
-        pwmGenerator.setPulseWidthInUs( 0, flightParameters.pwmMotor1 * 1000 );
-        pwmGenerator.setPulseWidthInUs( 1, flightParameters.pwmMotor2 * 1000 );
-        pwmGenerator.setPulseWidthInUs( 2, flightParameters.pwmMotor3 * 1000 );
-        pwmGenerator.setPulseWidthInUs( 3, flightParameters.pwmMotor4 * 1000 );
+        pwmGenerator.setPulseWidthInUs( 0, flightParameters.pulseWidthMotor0 );
+        pwmGenerator.setPulseWidthInUs( 1, flightParameters.pulseWidthMotor1 );
+        pwmGenerator.setPulseWidthInUs( 2, flightParameters.pulseWidthMotor2 );
+        pwmGenerator.setPulseWidthInUs( 3, flightParameters.pulseWidthMotor3 );
 
         telemetrySender.send( timestamp, flightControls, sensorsSample, flightParameters );
 

@@ -13,18 +13,17 @@ extern "C"
 class PWMGenerator 
 {
 public:
-    PWMGenerator();
-    int getPulseWidthInUs( int channelIndex ) const;                  
-    bool setPulseWidthInUs( int channelIndex, int widthInUs );
+    PWMGenerator( unsigned int minPulseWidthInUs, unsigned int maxPulseWidthInUs, const std::vector<unsigned int>& channelGPIOs );
+    unsigned int getPulseWidthInUs( std::size_t channelIndex ) const;                  
+    bool setPulseWidthInUs( std::size_t channelIndex, unsigned int widthInUs );
 
 private:
-    const int minWidth = 1000;
-    const int maxWidth = 2000;
+    unsigned int mMinPulseWidthInUs;
+    unsigned int mMaxPulseWidthInUs;
 
-    std::vector<int> channelGPIOs;
-    std::vector<int> channelWidths;
-    // zero-position for each channel
-
-    int pulseWidthIncrementInUs;
-    int RPIOPWMChannelIndex;
+    std::vector<unsigned int> mChannelGPIOs;
+    std::vector<unsigned int> mChannelWidths;     // TODO: maybe store a zero-position for each channel as well
+  
+    int mPulseWidthIncrementInUs;
+    int mRPIOPWMChannelIndex;
 };

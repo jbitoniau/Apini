@@ -1,9 +1,9 @@
 #include "FlightParameters.h"
 
 FlightParameters::FlightParameters():
-    pwmMotor1(1100),
-    pwmMotor2(1200),
-    pwmMotor3(1300),
-    pwmMotor4(1400)
+    pulseWidthMotor0(0),
+    pulseWidthMotor1(0),
+    pulseWidthMotor2(0),
+    pulseWidthMotor3(0)
 {
 }

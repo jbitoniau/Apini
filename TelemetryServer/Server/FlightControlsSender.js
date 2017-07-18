@@ -54,8 +54,8 @@ FlightControlsSender.prototype.send = function(flightControls) {
         }
     });
 
-    console.log('FlightControlsSender: to ' + this._remoteAddress + ':' + this._remotePort + ": " +
-        FlightControlsSender._uint8ArrayAsHexString(uint8Array, offset) + " - " + JSON.stringify(flightControls));
+    // console.log('FlightControlsSender: to ' + this._remoteAddress + ':' + this._remotePort + ": " +
+    //     FlightControlsSender._uint8ArrayAsHexString(uint8Array, offset) + " - " + JSON.stringify(flightControls));
 };
 
 FlightControlsSender._uint8ArrayAsHexString = function( uint8Array, length ){

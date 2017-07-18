@@ -5,8 +5,8 @@ class FlightParameters
 public:
     FlightParameters();
 
-    int pwmMotor1;      // in milliseconds
-    int pwmMotor2;
-    int pwmMotor3;
-    int pwmMotor4;
+    unsigned int pulseWidthMotor0;      // in microseconds
+    unsigned int pulseWidthMotor1;
+    unsigned int pulseWidthMotor2;
+    unsigned int pulseWidthMotor3;
 };

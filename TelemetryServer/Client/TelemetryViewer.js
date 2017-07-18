@@ -25,10 +25,10 @@ function TelemetryViewer(canvas) {
         rudder: { x: initialX, y: -0.7, width: initialWidth, height: 1.4 },
         elevators: { x: initialX, y: -0.7, width: initialWidth, height: 1.4 },
         ailerons: { x: initialX, y: -0.7, width: initialWidth, height: 1.4 },
-        pwmMotor1: { x: initialX, y: 1000, width: initialWidth, height:1000 },
-        pwmMotor2: { x: initialX, y: 1000, width: initialWidth, height:1000 },
-        pwmMotor3: { x: initialX, y: 1000, width: initialWidth, height:1000 },
-        pwmMotor4: { x: initialX, y: 1000, width: initialWidth, height:1000 }
+        pulseWidthMotor0: { x: initialX, y: 1000000, width: initialWidth, height:1000000 },
+        pulseWidthMotor1: { x: initialX, y: 1000000, width: initialWidth, height:1000000 },
+        pulseWidthMotor2: { x: initialX, y: 1000000, width: initialWidth, height:1000000 },
+        pulseWidthMotor3: { x: initialX, y: 1000000, width: initialWidth, height:1000000 }
     };
 
     this._graphData = [];

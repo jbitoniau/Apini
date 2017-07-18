@@ -67,7 +67,12 @@ TelemetryReceiver.prototype._onUDPSocketMessage = function(message, remote) {
         throttle: 0,
         rudder: 0,
         elevators: 0,
-        ailerons: 0
+        ailerons: 0,
+
+        pulseWidthMotor0: 0,
+        pulseWidthMotor1: 0,
+        pulseWidthMotor2: 0,
+        pulseWidthMotor3: 0
     };
 
     var dataView = new DataView(uint8Array.buffer);
@@ -111,13 +116,13 @@ TelemetryReceiver.prototype._onUDPSocketMessage = function(message, remote) {
     telemetrySample.ailerons = dataView.getFloat32(offset, true);
     offset += 4;
 
-    telemetrySample.pwmMotor1 = dataView.getUint32(offset, true);
+    telemetrySample.pulseWidthMotor0 = dataView.getUint32(offset, true);
     offset += 4;
-    telemetrySample.pwmMotor2 = dataView.getUint32(offset, true);
+    telemetrySample.pulseWidthMotor1 = dataView.getUint32(offset, true);
     offset += 4;
-    telemetrySample.pwmMotor3 = dataView.getUint32(offset, true);
+    telemetrySample.pulseWidthMotor2 = dataView.getUint32(offset, true);
     offset += 4;
-    telemetrySample.pwmMotor4 = dataView.getUint32(offset, true);
+    telemetrySample.pulseWidthMotor3 = dataView.getUint32(offset, true);
     offset += 4;
 
     for (var i = 0; i < this._onTelemetrySampleReadyListeners.length; ++i) {

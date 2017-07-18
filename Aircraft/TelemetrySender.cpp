@@ -53,10 +53,10 @@ int TelemetrySender::serializeTelemetry( std::uint32_t timestamp, const FlightCo
     memcpy( buffer+offset, reinterpret_cast<const char*>(&flightControls.elevators), floatSize ); offset+=floatSize;
     memcpy( buffer+offset, reinterpret_cast<const char*>(&flightControls.ailerons), floatSize ); offset+=floatSize;
     
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pwmMotor1), int32Size ); offset+=int32Size;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pwmMotor2), int32Size ); offset+=int32Size;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pwmMotor3), int32Size ); offset+=int32Size;
-    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pwmMotor4), int32Size ); offset+=int32Size;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pulseWidthMotor0), int32Size ); offset+=int32Size;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pulseWidthMotor1), int32Size ); offset+=int32Size;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pulseWidthMotor2), int32Size ); offset+=int32Size;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.pulseWidthMotor3), int32Size ); offset+=int32Size;
 
     return offset;
 }
