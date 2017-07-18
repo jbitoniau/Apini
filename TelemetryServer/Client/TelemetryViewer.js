@@ -45,15 +45,18 @@ FlightControlsPresenter.render = function(canvas, flightControls) {
     var canvasWidth = canvas.width;
     var canvasHeight = canvas.height;
 
+    var context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvasWidth, canvasHeight);
+
     var stickWidth = Math.min(canvasWidth / 2, canvasHeight);
     var radius = stickWidth / 2;
     var centerX = radius;
     var centerY = radius;
-    var x = flightControls.rudder;
     var y = flightControls.throttle - 0.5;
+    var x = flightControls.rudder;
     StickPresenter.render(canvas, { x: centerX, y: centerY }, radius * 0.85, { x: x, y: y });
-    x = flightControls.elevators;
-    y = flightControls.ailerons;
+    y = flightControls.elevators;
+    x = flightControls.ailerons;
     StickPresenter.render(canvas, { x: centerX * 3, y: centerY }, radius * 0.85, { x: x, y: y });
 };
 
