@@ -1,5 +1,62 @@
 'use strict';
 
+function StickPresenter() {}
+
+StickPresenter.render = function(canvas, center, radius, stickPosition) {
+    var context = canvas.getContext('2d');
+    context.lineWidth = 1;
+    context.fillStyle = '#EEEEFF';
+    context.strokeStyle = '#AAAAFF';
+
+    context.beginPath();
+    context.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+    context.fill();
+    context.stroke();
+
+    context.strokeRect(center.x - radius, center.y - radius, radius * 2, radius * 2);
+    context.beginPath();
+    context.moveTo(center.x, center.y - radius);
+    context.lineTo(center.x, center.y + radius);
+    context.moveTo(center.x - radius, center.y);
+    context.lineTo(center.x + radius, center.y);
+    context.stroke();
+
+    var knobRadius = radius / 8;
+    var x = center.x + 2 * radius * stickPosition.x;
+    var y = center.y - 2 * radius * stickPosition.y;
+    context.fillStyle = '#BBBBFF';
+    context.strokeStyle = '#9999FF';
+    context.beginPath();
+    context.arc(x, y, knobRadius, 0, 2 * Math.PI);
+    context.fill();
+    context.stroke();
+};
+
+function FlightControlsPresenter() {}
+
+FlightControlsPresenter.render = function(canvas, flightControls) {
+    if (canvas.width !== canvas.clientWidth) {
+        canvas.width = canvas.clientWidth;
+    }
+    if (canvas.height !== canvas.clientHeight) {
+        canvas.height = canvas.clientHeight;
+    }
+
+    var canvasWidth = canvas.width;
+    var canvasHeight = canvas.height;
+
+    var stickWidth = Math.min(canvasWidth / 2, canvasHeight);
+    var radius = stickWidth / 2;
+    var centerX = radius;
+    var centerY = radius;
+    var x = flightControls.rudder;
+    var y = flightControls.throttle - 0.5;
+    StickPresenter.render(canvas, { x: centerX, y: centerY }, radius * 0.85, { x: x, y: y });
+    x = flightControls.elevators;
+    y = flightControls.ailerons;
+    StickPresenter.render(canvas, { x: centerX * 3, y: centerY }, radius * 0.85, { x: x, y: y });
+};
+
 function TelemetryViewer(canvas) {
     this._canvas = canvas;
 
@@ -25,16 +82,16 @@ function TelemetryViewer(canvas) {
         rudder: { x: initialX, y: -0.7, width: initialWidth, height: 1.4 },
         elevators: { x: initialX, y: -0.7, width: initialWidth, height: 1.4 },
         ailerons: { x: initialX, y: -0.7, width: initialWidth, height: 1.4 },
-        pulseWidthMotor0: { x: initialX, y: 1000000, width: initialWidth, height:1000000 },
-        pulseWidthMotor1: { x: initialX, y: 1000000, width: initialWidth, height:1000000 },
-        pulseWidthMotor2: { x: initialX, y: 1000000, width: initialWidth, height:1000000 },
-        pulseWidthMotor3: { x: initialX, y: 1000000, width: initialWidth, height:1000000 }
+        pulseWidthMotor0: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 },
+        pulseWidthMotor1: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 },
+        pulseWidthMotor2: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 },
+        pulseWidthMotor3: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 }
     };
 
     this._graphData = [];
 
     this._graphOptions = {
-        yPropertyName: null,    // initialization takes place later
+        yPropertyName: null, // initialization takes place later
         clearCanvas: true,
         drawOriginAxes: true,
         drawDataRange: true,
@@ -80,7 +137,7 @@ function TelemetryViewer(canvas) {
 
     // Flight controls
     this._flightControlsProvider = new FlightControlsProvider();
-    this._flightControlsIntervalPeriod = 20;    // In milliseconds
+    this._flightControlsIntervalPeriod = 20; // In milliseconds
     this._flightControlsInterval = null;
 
     // Data transmitter objects
@@ -123,7 +180,7 @@ TelemetryViewer.prototype._closeWebsocket = function() {
         throw new Error('Invalid state');
     }
 
-    clearInterval( this._flightControlsInterval );
+    clearInterval(this._flightControlsInterval);
     this._flightControlsSender.dispose();
     this._flightControlsSender = null;
     this._flightControlsProvider.dispose();
@@ -181,10 +238,18 @@ TelemetryViewer.prototype._onSocketClose = function(/*??*/) {
 TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySamples) {
     for (var i = telemetrySamples.length - 1; i >= 0; i--) {
         var telemetrySample = telemetrySamples[i];
-        telemetrySample.x = telemetrySample.timestamp;   // The grapher requires an 'x' property 
+        telemetrySample.x = telemetrySample.timestamp; // The grapher requires an 'x' property
         this._graphData.splice(0, 0, telemetrySample);
     }
     this._render();
+
+    var canvas = document.getElementById('flightControlsCanvas');
+    FlightControlsPresenter.render(canvas, {
+        throttle: telemetrySample.throttle,
+        rudder: telemetrySample.rudder,
+        elevators: telemetrySample.elevators,
+        ailerons: telemetrySample.ailerons
+    });
 };
 
 TelemetryViewer.prototype.getAutoscroll = function() {
@@ -216,7 +281,7 @@ TelemetryViewer.prototype.setGraphDataType = function(graphDataType) {
     if (graphDataType === this._graphDataType) {
         return;
     }
-    if ( this._graphDataType ) {
+    if (this._graphDataType) {
         // Remember current graph data y/height for current data type
         this._graphDataWindows[this._graphDataType].y = this._graphDataWindow.y;
         this._graphDataWindows[this._graphDataType].height = this._graphDataWindow.height;

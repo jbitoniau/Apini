@@ -59,21 +59,7 @@
 			</canvas> <!-- canvas needs to both the opening and ending tags -->
 
 			<div style="position:absolute; top:0px; left:0px; height:35px; display:flex; flex-direction:row; justify-content:space-around; align-items:center;">
-				<!-- <button class="roundedButton" id="accelerationXButton" title="in Gs" style="margin:5 0 5 5">Acc.X</button>
-				<button class="roundedButton" id="accelerationYButton" title="in Gs" style="margin:5 0 5 5">Acc.Y</button>
-				<button class="roundedButton" id="accelerationZButton" title="in Gs" style="margin:5 0 5 5">Acc.Z</button>
-				<button class="roundedButton" id="angularSpeedXButton" title="in degrees per second" style="margin:5 0 5 5">Gyr.X</button>
-				<button class="roundedButton" id="angularSpeedYButton" title="in degrees per second" style="margin:5 0 5 5">Gyr.Y</button>
-				<button class="roundedButton" id="angularSpeedZButton" title="in degrees per second" style="margin:5 0 5 5">Gyr.Z</button>
-				<button class="roundedButton" id="temperatureButton" title="in degrees celsius" style="margin:5 0 5 5">Temp</button>
 
-				<button class="roundedButton" id="magneticHeadingXButton" title="in gauss" style="margin:5 0 5 5">Mag.X</button>
-				<button class="roundedButton" id="magneticHeadingYButton" title="in gauss" style="margin:5 0 5 5">Mag.Y</button>
-				<button class="roundedButton" id="magneticHeadingZButton" title="in gauss" style="margin:5 0 5 5">Mag.Z</button>
-				
-				<button class="roundedButton" id="temperature2Button" title="in degrees celsius" style="margin:5 0 5 5">Temp2</button>
-				<button class="roundedButton" id="pressureButton" title="in HPa" style="margin:5 0 5 5">Pressure</button> -->
-				
 				<button class="roundedButton" id="fullscreenButton" title="Fullscreen" style="margin:5 0 5 5">
 					<svg width="20px" height="20px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" 
 						stroke-width="10" stroke="#000000" >
@@ -101,11 +87,12 @@
 
 				<select id="dataTypeSelect" style="margin:5 0 5 5">
 				</select>
-				
 			</div>
 
-			<div style="position:absolute; top:5px; right:5px; background-color:green">
-				<div id="connectionIndicator" style="width:17px; height:17px"/>
+			<canvas id="flightControlsCanvas" style="position:absolute; bottom:5px; left:5px; width:300px; height:150px;background-color:transparent; border:1px solid grey">
+			</canvas>
+
+			<div id="connectionIndicator" style="position:absolute; top:5px; right:5px; width:17px; height:17px; background-color:green">
 			</div>
 		</div>
 	</body>
