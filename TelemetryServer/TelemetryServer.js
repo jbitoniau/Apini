@@ -55,6 +55,9 @@ function TelemetryServer() {
         function(request) {
             var websocketConnection = request.accept(null, request.origin);
 
+            // Create a new TelemetrySender for this websocket connection
+            var telemetrySender = new TelemetrySender(websocketConnection);
+            
             // TODO: this needs to be less hacky...
             if (!this._flightControlsReceiver) {
                 console.log('TelemetryServer: using this new connection to create FlightControlsReceiver');
@@ -62,10 +65,8 @@ function TelemetryServer() {
                 this._flightControlsReceiver._onFlightControlsReceived = function(flightControls) {
                     this._flightControlsSender.send(flightControls);
                 }.bind(this);
+                telemetrySender.thisWebsocketProvidesFlightControls = true;
             }
-
-            // Create a new TelemetrySender for this websocket connection
-            var telemetrySender = new TelemetrySender(websocketConnection);
 
             // Whenever we get a new telemetry sample from the TelemetryReceiver, give it to the TelemetrySender for sending
             var onTelemetrySampleReadyHandler = function(telemetrySample) {
@@ -76,7 +77,7 @@ function TelemetryServer() {
             // Remember this TelemetrySender
             this._telemetrySenders.push(telemetrySender);
 
-            console.log('TelemetryServer: ' + this._telemetrySenders.length + ' connections in progress');
+            console.log('TelemetryServer: ' + this._telemetrySenders.length + ' connections in progress. thisWebsocketProvidesFlightControls:' + telemetrySender.thisWebsocketProvidesFlightControls);
 
             var telemetryServer = this;
             websocketConnection.on(

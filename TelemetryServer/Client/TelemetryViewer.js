@@ -246,13 +246,11 @@ TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySample
     }
     this._render();
 
-    var canvas = document.getElementById('flightControlsCanvas');
-    FlightControlsPresenter.render(canvas, {
-        throttle: telemetrySample.throttle,
-        rudder: telemetrySample.rudder,
-        elevators: telemetrySample.elevators,
-        ailerons: telemetrySample.ailerons
-    });
+    if (telemetrySamples.length>0 && telemetrySamples[0].thisWebsocketProvidesFlightControls ) {
+        var canvas = document.getElementById('flightControlsCanvas');
+        var flightControls = this._flightControlsProvider.flightControls;
+        FlightControlsPresenter.render(canvas, flightControls);
+    }
 };
 
 TelemetryViewer.prototype.getAutoscroll = function() {

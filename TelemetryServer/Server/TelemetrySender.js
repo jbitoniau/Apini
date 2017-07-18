@@ -12,6 +12,8 @@ var TelemetrySender = function(websocketConnection) {
     // this._onTelemetrySampleReadyHandler = this._onTelemetrySampleReady.bind(this);
     // this._telemetryReceiver._onTelemetrySampleReadyListeners.push(this._onTelemetrySampleReadyHandler);
 
+    this.thisWebsocketProvidesFlightControls = false;
+
     this._instanceID = TelemetrySender.numInstances; // Just for debug
     TelemetrySender.numInstances++;
 
@@ -25,10 +27,12 @@ TelemetrySender.prototype.dispose = function() {
     TelemetrySender.numInstances--;
 };
 
-TelemetrySender.prototype.addTelemetrySampleToSend = function(telemetrySample)
-{
+TelemetrySender.prototype.addTelemetrySampleToSend = function(telemetrySample) {
     // TODO: check state of websocketConnection here...
-    this._telemetrySamplesToSend.splice(0, 0, telemetrySample);
+    var sample = {};
+    Object.assign( sample, telemetrySample );
+    sample.thisWebsocketProvidesFlightControls = this.thisWebsocketProvidesFlightControls;
+    this._telemetrySamplesToSend.splice(0, 0, sample);
     if (this._telemetrySamplesToSend.length > this._maxNumTelemetrySamplesToSend) {
         this._telemetrySamplesToSend.shift();
         console.warn('TelemetrySender.addTelemetrySampleToSend: buffer is full, dropping oldest telemetry sample');
@@ -36,7 +40,7 @@ TelemetrySender.prototype.addTelemetrySampleToSend = function(telemetrySample)
 };
 
 TelemetrySender.prototype.send = function() {
-    //console.log("TelemetrySender#"+ this._instanceID + ": sending " + this._telemetrySamplesToSend.length);
+    //console.log("TelemetrySender#"+ this._instanceID + ": sending " + this._telemetrySamplesToSend.length );
     var jsonData = JSON.stringify(this._telemetrySamplesToSend);
     this._websocketConnection.sendUTF(jsonData);
     this._telemetrySamplesToSend = [];
