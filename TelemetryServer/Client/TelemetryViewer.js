@@ -14,7 +14,7 @@ function TelemetryViewer(canvas) {
         magneticHeading: { x: initialX, y: -750, width: initialWidth, height: 1500 },
         temperature: { x: initialX, y: -5, width: initialWidth, height: 40 },
         pressure: { x: initialX, y: 1005, width: initialWidth, height: 20 },
-        flightControls: { x: initialX, y: -0.2, width: initialWidth, height: 1.4 },
+        flightControls: { x: initialX, y: -0.6, width: initialWidth, height: 1.8 },
         motorPulseWidth: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 }
     };
 
