@@ -34,7 +34,7 @@ void Aircraft::run()
     pwmChannelGPIOs.push_back( 24 );
     pwmChannelGPIOs.push_back( 23 );
     pwmChannelGPIOs.push_back( 22 );
-    PWMGenerator pwmGenerator(1000000, 2000000, pwmChannelGPIOs);
+   // PWMGenerator pwmGenerator(1000000, 2000000, pwmChannelGPIOs);
   
     TelemetrySender telemetrySender;
         
@@ -51,15 +51,15 @@ void Aircraft::run()
         }
 
         SensorsSample sensorsSample;
-        sensors.getSensorsSample();
+        sensorsSample = sensors.getSensorsSample();
     
         FlightParameters flightParameters;
         flightParameters = flightController.update( flightControls, sensorsSample );
 
-        pwmGenerator.setPulseWidthInUs( 0, flightParameters.pulseWidthMotor0 );
-        pwmGenerator.setPulseWidthInUs( 1, flightParameters.pulseWidthMotor1 );
-        pwmGenerator.setPulseWidthInUs( 2, flightParameters.pulseWidthMotor2 );
-        pwmGenerator.setPulseWidthInUs( 3, flightParameters.pulseWidthMotor3 );
+        // pwmGenerator.setPulseWidthInUs( 0, flightParameters.pulseWidthMotor0 );
+        // pwmGenerator.setPulseWidthInUs( 1, flightParameters.pulseWidthMotor1 );
+        // pwmGenerator.setPulseWidthInUs( 2, flightParameters.pulseWidthMotor2 );
+        // pwmGenerator.setPulseWidthInUs( 3, flightParameters.pulseWidthMotor3 );
 
         telemetrySender.send( timestamp, flightControls, sensorsSample, flightParameters );
 
