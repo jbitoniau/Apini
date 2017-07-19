@@ -13,27 +13,31 @@ function FlightControlsProvider() {
 
 FlightControlsProvider.prototype.dispose = function() {};
 
+FlightControlsProvider.prototype.isGamepadConnected = function() {
+    return this._gamepadIndex!==-1;
+};
+
 FlightControlsProvider.prototype.update = function() {
+    // If so far, we haven't detected a gamepad we can use, look again 
     if (this._gamepadIndex === -1) {
-        // Check whether there's a gamepad we can use
         this._gamepadIndex = FlightControlsProvider._getFirstAvailableGamepadIndex();
         if (this._gamepadIndex === -1) {
             // Still none available
-            return;
+            return false;
         }
     }
 
     // Check whether the gamepad we're using is still there
     var gamepad = FlightControlsProvider._getGamepadByIndex(this._gamepadIndex);
     if (!gamepad) {
-        // If there's another one available, use it
+        // If it's gone, check whether there's another one available
         this._gamepadIndex = FlightControlsProvider._getFirstAvailableGamepadIndex();
         if (this._gamepadIndex === -1) {
             // None available, reset the game controls
             this._gamepadIndex = -1;
             console.warn('Gamepad removed, no more usable gamepad. Clearing flight controls');
             this._flightControls.clear();
-            return;
+            return false;
         }
 
         // Use the new one
@@ -69,6 +73,8 @@ FlightControlsProvider.prototype.update = function() {
     this._flightControls.rudder = MathExtra.clamp(stick1Position.x, -0.5, 0.5);
     this._flightControls.elevators = MathExtra.clamp(stick2Position.y, -0.5, 0.5);
     this._flightControls.ailerons = MathExtra.clamp(stick2Position.x, -0.5, 0.5);
+
+    return true;
 };
 
 FlightControlsProvider._applyDeadZoneRadius = function(deadZoneRadius, position) {
