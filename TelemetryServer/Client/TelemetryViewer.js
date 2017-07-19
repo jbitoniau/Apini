@@ -9,26 +9,65 @@ function TelemetryViewer(canvas) {
     var initialX = now - initialWidth / 2;
     this._graphDataWindow = { x: initialX, y: -5, width: initialWidth, height: 40 };
     this._graphDataWindows = {
-        accelerationX: { x: initialX, y: -4, width: initialWidth, height: 8 },
-        accelerationY: { x: initialX, y: -4, width: initialWidth, height: 8 },
-        accelerationZ: { x: initialX, y: -4, width: initialWidth, height: 8 },
-        angularSpeedX: { x: initialX, y: -1000, width: initialWidth, height: 2000 },
-        angularSpeedY: { x: initialX, y: -1000, width: initialWidth, height: 2000 },
-        angularSpeedZ: { x: initialX, y: -1000, width: initialWidth, height: 2000 },
+        acceleration: { x: initialX, y: -4, width: initialWidth, height: 8 },
+        angularSpeed: { x: initialX, y: -1000, width: initialWidth, height: 2000 },
+        magneticHeading: { x: initialX, y: -750, width: initialWidth, height: 1500 },
         temperature: { x: initialX, y: -5, width: initialWidth, height: 40 },
-        magneticHeadingX: { x: initialX, y: -750, width: initialWidth, height: 1500 },
-        magneticHeadingY: { x: initialX, y: -750, width: initialWidth, height: 1500 },
-        magneticHeadingZ: { x: initialX, y: -750, width: initialWidth, height: 1500 },
-        temperature2: { x: initialX, y: -5, width: initialWidth, height: 40 },
         pressure: { x: initialX, y: 1005, width: initialWidth, height: 20 },
-        throttle: { x: initialX, y: -0.2, width: initialWidth, height: 1.4 },
-        rudder: { x: initialX, y: -0.7, width: initialWidth, height: 1.4 },
-        elevators: { x: initialX, y: -0.7, width: initialWidth, height: 1.4 },
-        ailerons: { x: initialX, y: -0.7, width: initialWidth, height: 1.4 },
-        pulseWidthMotor0: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 },
-        pulseWidthMotor1: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 },
-        pulseWidthMotor2: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 },
-        pulseWidthMotor3: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 }
+        flightControls: { x: initialX, y: -0.2, width: initialWidth, height: 1.4 },
+        motorPulseWidth: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 },
+    };
+
+    this._graphDataTypeOptions = {
+        acceleration: {
+            yPropertyName: ['accelerationX', 'accelerationY', 'accelerationZ'],
+            colors: {
+                dataLine: ["#990000", "#009900", "#000099"],
+                dataPoint: ["#990000", "#009900", "#000099"]
+            }
+        },
+        angularSpeed: {
+            yPropertyName: ['angularSpeedX', 'angularSpeedY', 'angularSpeedZ'],
+            colors: {
+                dataLine: ["#990000", "#009900", "#000099"],
+                dataPoint: ["#990000", "#009900", "#000099"]
+            }
+        },
+        magneticHeading: {
+            yPropertyName: ['magneticHeadingX', 'magneticHeadingY', 'magneticHeadingZ'],
+            colors: {
+                dataLine: ["#990000", "#009900", "#000099"],
+                dataPoint: ["#990000", "#009900", "#000099"]
+            }
+        },
+        temperature: {
+            yPropertyName: ['temperature', 'temperature2'],
+            colors: {
+                dataLine: ["#990000", "#009900"],
+                dataPoint: ["#990000", "#009900"]
+            }
+        },
+        pressure: {
+            yPropertyName: 'pressure', 
+            colors: {
+                dataLine: "#990000",
+                dataPoint: "#990000"
+            }
+        },
+        flightControls: {
+            yPropertyName: ['throttle', 'rudder', 'elevators', 'ailerons'],
+            colors: {
+                dataLine: ["#990000", "#009900", "#000099", "#009999"],
+                dataPoint: ["#990000", "#009900", "#000099", "#009999"]
+            }
+        },
+        motorPulseWidth: {
+            yPropertyName: ['pulseWidthMotor0', 'pulseWidthMotor1', 'pulseWidthMotor2', 'pulseWidthMotor3'],
+            colors: {
+                dataLine: ["#990000", "#009900", "#000099", "#009999"],
+                dataPoint: ["#990000", "#009900", "#000099", "#009999"]
+            }
+        }
     };
 
     this._graphData = [];
@@ -53,18 +92,18 @@ function TelemetryViewer(canvas) {
             //typicalDataPointXSpacing: 10*60*1000,     // No need if we provide a contiguityThreshold
             maxPointSize: 5,
             maxNumPoints: 500
-        }
-        /*colors: {
-            clear:'#FFFFFF',
+        },
+        colors: {
+        /*    clear:'#FFFFFF',
             dataRange: "#EEEEEE",
             dataGaps: "#EEEEEE",
             axesLines: "#AA6666",
             primaryLinesText: '#AA6666',
             primaryLines: '#FFAAAA',
-            secondaryLines: '#FFDDDD',
+            secondaryLines: '#FFDDDD',*/
             dataLine: "#884444",
-            dataPoint: "#884444",
-        },*/
+            dataPoint: "#884444"
+        }
     };
 
     // The graph controller is responsible for rendering the graph and handling input events to navigate in it
@@ -76,7 +115,7 @@ function TelemetryViewer(canvas) {
 
     // The type of graph data currently being displayed
     this._graphDataType = null;
-    this.setGraphDataType('throttle');
+    this.setGraphDataType('flightControls');
 
     // Flight controls
     this._flightControlsProvider = new FlightControlsProvider();
@@ -148,8 +187,22 @@ TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
     this._flightControlsSender = new FlightControlsSender(this._websocket);
     this._flightControlsInterval = setInterval(
         function() {
+            var flightControls = null;
             this._flightControlsProvider.update();
-            var flightControls = this._flightControlsProvider.flightControls;
+            if (this._flightControlsProvider.isGamepadConnected()) {
+                flightControls = this._flightControlsProvider.flightControls;
+            } else {
+                flightControls = new FlightControls();
+                // var now = performance.now();
+                // var t = Math.floor(now) % 1000 / 1000;
+                // flightControls.throttle = Math.sin(Math.PI * 2 * t) / 2 + 0.5;
+                // t = Math.floor(now) % 2300 / 2300;
+                // flightControls.rudder = Math.sin(Math.PI * 2 * t) / 2;
+                // t = Math.floor(now) % 1100 / 1100;
+                // flightControls.elevators = Math.sin(Math.PI * 2 * t) / 2;
+                // t = Math.floor(now) % 5000 / 5000;
+                // flightControls.ailerons = Math.sin(Math.PI * 2 * t) / 2;
+            }
             this._flightControlsSender.send(flightControls);
         }.bind(this),
         this._flightControlsIntervalPeriod
@@ -186,7 +239,7 @@ TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySample
     }
     this._render();
 
-    if (telemetrySamples.length>0 && telemetrySamples[0].thisWebsocketProvidesFlightControls ) {
+    if (telemetrySamples.length > 0 && telemetrySamples[0].thisWebsocketProvidesFlightControls) {
         var canvas = document.getElementById('flightControlsCanvas');
         var flightControls = this._flightControlsProvider.flightControls;
         FlightControlsPresenter.render(canvas, flightControls);
@@ -231,7 +284,7 @@ TelemetryViewer.prototype.setGraphDataType = function(graphDataType) {
     // Change data type
     var prevGraphDataType = this._graphDataType;
     this._graphDataType = graphDataType;
-    this._graphOptions.yPropertyName = this._graphDataType;
+    Object.assign(this._graphOptions, this._graphDataTypeOptions[this._graphDataType]);
 
     // Restore graph data y/height for new current type of data to display
     this._graphDataWindow.y = this._graphDataWindows[this._graphDataType].y;

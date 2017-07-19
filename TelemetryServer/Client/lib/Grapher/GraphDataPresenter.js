@@ -97,8 +97,6 @@ GraphDataPresenter.render = function(canvas, graphData, graphDataWindow, graphOp
 	}
 
 	// Data
-	context.strokeStyle = colors.dataLine || '#222222';
-	context.fillStyle = colors.dataPoint || '#222222';
 	GraphDataPresenter.drawGraphData(
 		context,
 		canvas,
@@ -106,7 +104,9 @@ GraphDataPresenter.render = function(canvas, graphData, graphDataWindow, graphOp
 		graphData,
 		graphOptions.yPropertyName,
 		graphOptions.contiguityThreshold,
-		graphOptions.points
+		graphOptions.points,
+		colors.dataLine,
+		colors.dataPoint
 	);
 };
 
@@ -259,9 +259,57 @@ GraphDataPresenter.drawGraphDataGaps = function(context, canvas, graphDataWindow
 	GraphDataPresenter.parseGraphData(graphData, contiguityThreshold, null, onMissingDataRange, r.i0, n);
 };
 
-GraphDataPresenter.drawGraphData = function(context, canvas, graphDataWindow, graphData, graphDataYPropertyName, contiguityThreshold, pointsOptions) {
+GraphDataPresenter.drawGraphData = function(context, canvas, graphDataWindow, graphData, graphDataYPropertyName, contiguityThreshold, pointsOptions, dataLineColor, dataPointColor) {
+	var yPropertyNames = [];
 	if (!graphDataYPropertyName) {
-		graphDataYPropertyName = 'y';
+		yPropertyNames = ['y'];
+	} else if (typeof graphDataYPropertyName === 'string') {
+		yPropertyNames = [graphDataYPropertyName];
+	} else if (typeof graphDataYPropertyName === 'object' && graphDataYPropertyName.constructor && graphDataYPropertyName.constructor === Array) {
+		yPropertyNames = graphDataYPropertyName.slice();
+	} else {
+		console.warn('invalid yPropertyNames');
+		return;
+	}
+
+	var dataLineColors = [];
+	if (!dataLineColor) {
+		for ( var i=0; i<yPropertyNames.length; i++ ) {
+			dataLineColors.push( '#222222' );
+		}
+	}
+	else if ( typeof dataLineColor==='string') {
+		for ( var i=0; i<yPropertyNames.length; i++ ) {
+			dataLineColors.push( dataLineColor );
+		}
+	}
+	else if (typeof dataLineColor === 'object' && dataLineColor.constructor && dataLineColor.constructor === Array) {
+		for ( var i=0; i<yPropertyNames.length; i++ ) {
+			dataLineColors.push( dataLineColor[i] );
+		}
+	} else {
+		console.warn('invalid yPropertyNames');
+		return;
+	}
+
+	var dataPointColors = [];
+	if (!dataLineColor) {
+		for ( var i=0; i<yPropertyNames.length; i++ ) {
+			dataPointColors.push( '#222222' );
+		}
+	}
+	else if ( typeof dataPointColor==='string') {
+		for ( var i=0; i<yPropertyNames.length; i++ ) {
+			dataPointColors.push( dataPointColor );
+		}
+	}
+	else if (typeof dataPointColor === 'object' && dataPointColor.constructor && dataPointColor.constructor === Array) {
+		for ( var i=0; i<yPropertyNames.length; i++ ) {
+			dataPointColors.push( dataPointColor[i] );
+		}
+	} else {
+		console.warn('invalid yPropertyNames');
+		return;
 	}
 
 	// Calculate the size of points based on their estimate number in the current graph data window
@@ -284,35 +332,43 @@ GraphDataPresenter.drawGraphData = function(context, canvas, graphDataWindow, gr
 	}
 	var n = r.i1 - r.i0 + 1;
 
-	var drawData = function(i0, i1) {
-		context.beginPath();
-		var graphDataPoint = { x: 0, y: 0 };
-		for (var i = i0; i <= i1; i++) {
-			graphDataPoint.x = graphData[i].x;
-			graphDataPoint.y = graphData[i][graphDataYPropertyName];
+	for ( var i=0; i<yPropertyNames.length; i++ ) {
+		var yPropertyName = yPropertyNames[i];
+		var dataLineColor = dataLineColors[i];
+		var dataPointColor = dataPointColors[i];
+		context.strokeStyle = dataLineColor;
+		context.fillStyle = dataPointColor;
 
-			var windowPoint = GraphDataPresenter.graphDataPointToGraphWindowPoint(graphDataPoint, graphDataWindow);
-			var canvasPoint = GraphDataPresenter.graphWindowPointToCanvasPoint(windowPoint, canvas);
-			context.lineTo(canvasPoint.x, canvasPoint.y);
-		}
-		context.stroke();
-
-		if (pointSize > 0) {
+		var drawData = function(i0, i1) {
+			context.beginPath();
+			var graphDataPoint = { x: 0, y: 0 };
 			for (var i = i0; i <= i1; i++) {
 				graphDataPoint.x = graphData[i].x;
-				graphDataPoint.y = graphData[i][graphDataYPropertyName];
+				graphDataPoint.y = graphData[i][yPropertyName];
 
 				var windowPoint = GraphDataPresenter.graphDataPointToGraphWindowPoint(graphDataPoint, graphDataWindow);
 				var canvasPoint = GraphDataPresenter.graphWindowPointToCanvasPoint(windowPoint, canvas);
-				context.fillRect(canvasPoint.x - pointSize / 2, canvasPoint.y - pointSize / 2, pointSize, pointSize);
+				context.lineTo(canvasPoint.x, canvasPoint.y);
 			}
-		}
-	};
+			context.stroke();
 
-	if (contiguityThreshold) {
-		GraphDataPresenter.parseGraphData(graphData, contiguityThreshold, drawData, null, r.i0, n);
-	} else {
-		drawData(r.i0, r.i1);
+			if (pointSize > 0) {
+				for (var i = i0; i <= i1; i++) {
+					graphDataPoint.x = graphData[i].x;
+					graphDataPoint.y = graphData[i][yPropertyName];
+
+					var windowPoint = GraphDataPresenter.graphDataPointToGraphWindowPoint(graphDataPoint, graphDataWindow);
+					var canvasPoint = GraphDataPresenter.graphWindowPointToCanvasPoint(windowPoint, canvas);
+					context.fillRect(canvasPoint.x - pointSize / 2, canvasPoint.y - pointSize / 2, pointSize, pointSize);
+				}
+			}
+		};
+
+		if (contiguityThreshold) {
+			GraphDataPresenter.parseGraphData(graphData, contiguityThreshold, drawData, null, r.i0, n);
+		} else {
+			drawData(r.i0, r.i1);
+		}
 	}
 };
 
