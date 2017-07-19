@@ -15,57 +15,57 @@ function TelemetryViewer(canvas) {
         temperature: { x: initialX, y: -5, width: initialWidth, height: 40 },
         pressure: { x: initialX, y: 1005, width: initialWidth, height: 20 },
         flightControls: { x: initialX, y: -0.2, width: initialWidth, height: 1.4 },
-        motorPulseWidth: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 },
+        motorPulseWidth: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 }
     };
 
     this._graphDataTypeOptions = {
         acceleration: {
             yPropertyName: ['accelerationX', 'accelerationY', 'accelerationZ'],
             colors: {
-                dataLine: ["#990000", "#009900", "#000099"],
-                dataPoint: ["#990000", "#009900", "#000099"]
+                dataLine: ['#990000', '#009900', '#000099'],
+                dataPoint: ['#990000', '#009900', '#000099']
             }
         },
         angularSpeed: {
             yPropertyName: ['angularSpeedX', 'angularSpeedY', 'angularSpeedZ'],
             colors: {
-                dataLine: ["#990000", "#009900", "#000099"],
-                dataPoint: ["#990000", "#009900", "#000099"]
+                dataLine: ['#990000', '#009900', '#000099'],
+                dataPoint: ['#990000', '#009900', '#000099']
             }
         },
         magneticHeading: {
             yPropertyName: ['magneticHeadingX', 'magneticHeadingY', 'magneticHeadingZ'],
             colors: {
-                dataLine: ["#990000", "#009900", "#000099"],
-                dataPoint: ["#990000", "#009900", "#000099"]
+                dataLine: ['#990000', '#009900', '#000099'],
+                dataPoint: ['#990000', '#009900', '#000099']
             }
         },
         temperature: {
             yPropertyName: ['temperature', 'temperature2'],
             colors: {
-                dataLine: ["#990000", "#009900"],
-                dataPoint: ["#990000", "#009900"]
+                dataLine: ['#990000', '#009900'],
+                dataPoint: ['#990000', '#009900']
             }
         },
         pressure: {
-            yPropertyName: 'pressure', 
+            yPropertyName: 'pressure',
             colors: {
-                dataLine: "#990000",
-                dataPoint: "#990000"
+                dataLine: '#990000',
+                dataPoint: '#990000'
             }
         },
         flightControls: {
             yPropertyName: ['throttle', 'rudder', 'elevators', 'ailerons'],
             colors: {
-                dataLine: ["#990000", "#009900", "#000099", "#009999"],
-                dataPoint: ["#990000", "#009900", "#000099", "#009999"]
+                dataLine: ['#990000', '#009900', '#000099', '#009999'],
+                dataPoint: ['#990000', '#009900', '#000099', '#009999']
             }
         },
         motorPulseWidth: {
             yPropertyName: ['pulseWidthMotor0', 'pulseWidthMotor1', 'pulseWidthMotor2', 'pulseWidthMotor3'],
             colors: {
-                dataLine: ["#990000", "#009900", "#000099", "#009999"],
-                dataPoint: ["#990000", "#009900", "#000099", "#009999"]
+                dataLine: ['#990000', '#009900', '#000099', '#009999'],
+                dataPoint: ['#990000', '#009900', '#000099', '#009999']
             }
         }
     };
@@ -94,15 +94,15 @@ function TelemetryViewer(canvas) {
             maxNumPoints: 500
         },
         colors: {
-        /*    clear:'#FFFFFF',
+            /*    clear:'#FFFFFF',
             dataRange: "#EEEEEE",
             dataGaps: "#EEEEEE",
             axesLines: "#AA6666",
             primaryLinesText: '#AA6666',
             primaryLines: '#FFAAAA',
             secondaryLines: '#FFDDDD',*/
-            dataLine: "#884444",
-            dataPoint: "#884444"
+            dataLine: '#884444',
+            dataPoint: '#884444'
         }
     };
 
@@ -242,7 +242,17 @@ TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySample
     if (telemetrySamples.length > 0 && telemetrySamples[0].thisWebsocketProvidesFlightControls) {
         var canvas = document.getElementById('flightControlsCanvas');
         var flightControls = this._flightControlsProvider.flightControls;
-        FlightControlsPresenter.render(canvas, flightControls);
+
+        var options = null;
+        if (!this._flightControlsProvider.isGamepadConnected()) {
+            options = {
+                stickFillColor: '#EEEEFF',
+                stickStrokeColor: '#AAAAFF',
+                knobFillColor: '#CCCCFF',
+                knobStrokeColor: '#9999FF'
+            };
+        }
+        FlightControlsPresenter.render(canvas, flightControls, options);
     }
 };
 

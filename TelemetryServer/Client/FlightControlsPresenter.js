@@ -2,7 +2,7 @@
 
 function FlightControlsPresenter() {}
 
-FlightControlsPresenter.render = function(canvas, flightControls) {
+FlightControlsPresenter.render = function(canvas, flightControls, options) {
     if (canvas.width !== canvas.clientWidth) {
         canvas.width = canvas.clientWidth;
     }
@@ -22,19 +22,26 @@ FlightControlsPresenter.render = function(canvas, flightControls) {
     var centerY = radius;
     var y = flightControls.throttle - 0.5;
     var x = flightControls.rudder;
-    StickPresenter.render(canvas, { x: centerX, y: centerY }, radius * 0.85, { x: x, y: y });
+    StickPresenter.render(canvas, { x: centerX, y: centerY }, radius * 0.85, { x: x, y: y }, options);
     y = flightControls.elevators;
     x = flightControls.ailerons;
-    StickPresenter.render(canvas, { x: centerX * 3, y: centerY }, radius * 0.85, { x: x, y: y });
+    StickPresenter.render(canvas, { x: centerX * 3, y: centerY }, radius * 0.85, { x: x, y: y }, options);
 };
 
 function StickPresenter() {}
 
-StickPresenter.render = function(canvas, center, radius, stickPosition) {
+StickPresenter.render = function(canvas, center, radius, stickPosition, options) {
     var context = canvas.getContext('2d');
     context.lineWidth = 1;
-    context.fillStyle = '#EEEEFF';
-    context.strokeStyle = '#AAAAFF';
+
+    var options = options || {};
+    var stickFillColor = options.stickFillColor || '#CCCCFF';
+    var stickStrokeColor = options.stickStrokeColor || '#8888FF';
+    var knobFillColor = options.knobFillColor || '#9494FF';
+    var knobStrokeColor = options.knobStrokeColor || '#7777FF';
+
+    context.fillStyle = stickFillColor; 
+    context.strokeStyle = stickStrokeColor;
 
     context.beginPath();
     context.arc(center.x, center.y, radius, 0, 2 * Math.PI);
@@ -52,8 +59,9 @@ StickPresenter.render = function(canvas, center, radius, stickPosition) {
     var knobRadius = radius / 8;
     var x = center.x + 2 * radius * stickPosition.x;
     var y = center.y - 2 * radius * stickPosition.y;
-    context.fillStyle = '#BBBBFF';
-    context.strokeStyle = '#9999FF';
+    context.fillStyle = knobFillColor;
+    context.strokeStyle = knobStrokeColor;
+
     context.beginPath();
     context.arc(x, y, knobRadius, 0, 2 * Math.PI);
     context.fill();
