@@ -1,10 +1,10 @@
 /*
     TelemetrySender
 */
-var TelemetrySender = function(websocketConnection) {
+var TelemetrySender = function(websocketConnection, updateIntervalMs) {
     this._websocketConnection = websocketConnection;
 
-    this._interval = setInterval(this.send.bind(this), 50);
+    this._interval = setInterval(this.send.bind(this), updateIntervalMs);
 
     this._maxNumTelemetrySamplesToSend = 100;
     this._telemetrySamplesToSend = [];
