@@ -3,11 +3,16 @@
 function FlightControlsPresenter() {}
 
 FlightControlsPresenter.render = function(canvas, flightControls, options) {
-    if (canvas.width !== canvas.clientWidth) {
-        canvas.width = canvas.clientWidth;
+    var devicePixelRatio = 1; //window.devicePixelRatio;
+    var currentCanvasPixelWidth = canvas.width;
+    var currentCanvasPixelHeight = canvas.height;
+    var newCanvasPixelWidth = canvas.clientWidth * devicePixelRatio;
+    var newCanvasPixelHeight = canvas.clientHeight * devicePixelRatio;
+    if (currentCanvasPixelWidth !== newCanvasPixelWidth) {
+        canvas.width = newCanvasPixelWidth;
     }
-    if (canvas.height !== canvas.clientHeight) {
-        canvas.height = canvas.clientHeight;
+    if (currentCanvasPixelHeight !== newCanvasPixelHeight) {
+        canvas.height = newCanvasPixelHeight;
     }
 
     var canvasWidth = canvas.width;
