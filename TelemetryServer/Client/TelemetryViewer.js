@@ -1,7 +1,8 @@
 'use strict';
 
-function TelemetryViewer(canvas) {
-    this._canvas = canvas;
+function TelemetryViewer(graphCanvas, flightControlsCanvas) {
+    this._graphCanvas = graphCanvas;
+    this._flightControlsCanvas = flightControlsCanvas;
 
     // Current and backed-up graph data windows for each type of data
     var now = new Date().getTime();
@@ -107,7 +108,7 @@ function TelemetryViewer(canvas) {
     };
 
     // The graph controller is responsible for rendering the graph and handling input events to navigate in it
-    this._graphController = new GraphController(this._canvas, this._graphData, this._graphDataWindow, this._graphOptions);
+    this._graphController = new GraphController(this._graphCanvas, this._graphData, this._graphDataWindow, this._graphOptions);
 
     // When the user navigates in the graph (i.e. changes the graph data window), we need to check whether more data needs to be fetched
     this._graphController._onGraphDataWindowChange = this._onGraphDataWindowChange.bind(this);
@@ -133,6 +134,10 @@ function TelemetryViewer(canvas) {
     this._onSocketErrorHandler = this._onSocketError.bind(this);
     this._onSocketCloseHandler = this._onSocketClose.bind(this);
     this._openWebsocket();
+
+    this._onWindowResizeHandler = this._onWindowResize.bind(this);
+    window.addEventListener('resize', this._onWindowResizeHandler);
+    this._onWindowResize();
 
     // Events
     this.onGraphDataTypeChanged = null;
@@ -240,7 +245,7 @@ TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySample
     this._render();
 
     if (telemetrySamples.length > 0 && telemetrySamples[0].thisWebsocketProvidesFlightControls) {
-        var canvas = document.getElementById('flightControlsCanvas');
+        this._flightControlsCanvas.style.display = 'block';
         var flightControls = this._flightControlsProvider.flightControls;
 
         var options = null;
@@ -252,7 +257,10 @@ TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySample
                 knobStrokeColor: '#9999FF'
             };
         }
-        FlightControlsPresenter.render(canvas, flightControls, options);
+        FlightControlsPresenter.render(this._flightControlsCanvas, flightControls, options);
+    }
+    else {
+        this._flightControlsCanvas.style.display = 'none';
     }
 };
 
@@ -314,7 +322,7 @@ TelemetryViewer.prototype._render = function() {
         this._scrollToLatestData();
     }
 
-    GraphDataPresenter.render(this._canvas, this._graphData, this._graphDataWindow, this._graphOptions);
+    GraphDataPresenter.render(this._graphCanvas, this._graphData, this._graphDataWindow, this._graphOptions);
 };
 
 TelemetryViewer.prototype._onGraphDataWindowChange = function(prevGraphDataWindow) {
@@ -335,3 +343,11 @@ TelemetryViewer.prototype._scrollToLatestData = function() {
     var latestDataPoint = graphData[0];
     this._graphDataWindow.x = latestDataPoint.x - this._graphDataWindow.width;
 };
+
+TelemetryViewer.prototype._onWindowResize = function( event ) {
+    var width = window.innerWidth;
+    var numPoints = Math.floor(width / 10);
+    this._graphOptions.points.maxNumPoints = numPoints;
+};
+
+
