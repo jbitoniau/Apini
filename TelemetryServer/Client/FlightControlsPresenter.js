@@ -37,7 +37,7 @@ function StickPresenter() {}
 
 StickPresenter.render = function(canvas, center, radius, stickPosition, options) {
     var context = canvas.getContext('2d');
-    context.lineWidth = 1;
+    context.lineWidth = 2;
 
     var options = options || {};
     var stickFillColor = options.stickFillColor || '#CCCCFF';

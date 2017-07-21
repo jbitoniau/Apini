@@ -15,8 +15,8 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
         magneticHeading: { x: initialX, y: -750, width: initialWidth, height: 1500 },
         temperature: { x: initialX, y: -5, width: initialWidth, height: 40 },
         pressure: { x: initialX, y: 1005, width: initialWidth, height: 20 },
-        flightControls: { x: initialX, y: -0.2, width: initialWidth, height: 1.4 },
-        motorPulseWidth: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 }
+        flightControls: { x: initialX, y: -0.7, width: initialWidth, height: 1.9 },
+        motorPulseWidth: { x: initialX, y: 950000, width: initialWidth, height: 1100000 }
     };
 
     this._graphDataTypeOptions = {
@@ -206,15 +206,17 @@ TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
                 flightControls = this._flightControlsProvider.flightControls;
             } else {
                 flightControls = new FlightControls();
-                // var now = performance.now();
-                // var t = Math.floor(now) % 1000 / 1000;
-                // flightControls.throttle = Math.sin(Math.PI * 2 * t) / 2 + 0.5;
-                // t = Math.floor(now) % 2300 / 2300;
-                // flightControls.rudder = Math.sin(Math.PI * 2 * t) / 2;
-                // t = Math.floor(now) % 1100 / 1100;
-                // flightControls.elevators = Math.sin(Math.PI * 2 * t) / 2;
-                // t = Math.floor(now) % 5000 / 5000;
-                // flightControls.ailerons = Math.sin(Math.PI * 2 * t) / 2;
+                if ( this._debugFakeFlightControls ) {
+                    var now = performance.now();
+                    var t = Math.floor(now) % 1000 / 1000;
+                    flightControls.throttle = Math.sin(Math.PI * 2 * t) / 2 + 0.5;
+                    t = Math.floor(now) % 2300 / 2300;
+                    flightControls.rudder = Math.sin(Math.PI * 2 * t) / 2;
+                    t = Math.floor(now) % 1100 / 1100;
+                    flightControls.elevators = Math.sin(Math.PI * 2 * t) / 2;
+                    t = Math.floor(now) % 5000 / 5000;
+                    flightControls.ailerons = Math.sin(Math.PI * 2 * t) / 2;
+                }
             }
             this._flightControlsSender.send(flightControls);
         }.bind(this),
@@ -263,7 +265,7 @@ TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySample
 
     // TODO: move rendering somewhere else
     this._render();
-
+    
     if (telemetrySamples.length > 0 && telemetrySamples[0].thisWebsocketProvidesFlightControls) {
         this._flightControlsCanvas.style.display = 'block';
         var flightControls = this._flightControlsProvider.flightControls;
