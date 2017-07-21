@@ -72,6 +72,13 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
     };
 
     this._graphData = [];
+    this._maxNumGraphDataPoints = null; 
+    if ( isMobileDevice() ) {
+        this._maxNumGraphDataPoints = 20 * 1000/20;
+    }
+    else {
+        this._maxNumGraphDataPoints = 1 * 60 * 1000/20;  
+    }
 
     this._graphOptions = {
         yPropertyName: null, // initialization takes place later
@@ -122,6 +129,7 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
     this._flightControlsProvider = new FlightControlsProvider();
     this._flightControlsIntervalPeriod = 20; // In milliseconds
     this._flightControlsInterval = null;
+    this._debugFakeFlightControls = true;
 
     // Data transmitter objects
     this._flightControlsSender = null;
@@ -237,11 +245,23 @@ TelemetryViewer.prototype._onSocketClose = function(/*??*/) {
 };
 
 TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySamples) {
-    for (var i = telemetrySamples.length - 1; i >= 0; i--) {
+    // Add the samples to the beginning of the graph data array
+    // The grapher draws most recent samples at beginning of array first
+    for (var i = 0; i < telemetrySamples.length; i++) {
         var telemetrySample = telemetrySamples[i];
         telemetrySample.x = telemetrySample.timestamp; // The grapher requires an 'x' property
         this._graphData.splice(0, 0, telemetrySample);
     }
+
+    // If there's a maximum number of samples to hold, enforce it
+    if (typeof this._maxNumGraphDataPoints === 'number') {
+        var numExcessDataPoints = this._graphData.length - this._maxNumGraphDataPoints;
+        if (numExcessDataPoints > 0) {
+            this._graphData.splice( -numExcessDataPoints );
+        }
+    }
+
+    // TODO: move rendering somewhere else
     this._render();
 
     if (telemetrySamples.length > 0 && telemetrySamples[0].thisWebsocketProvidesFlightControls) {
@@ -258,8 +278,7 @@ TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySample
             };
         }
         FlightControlsPresenter.render(this._flightControlsCanvas, flightControls, options);
-    }
-    else {
+    } else {
         this._flightControlsCanvas.style.display = 'none';
     }
 };
@@ -344,10 +363,33 @@ TelemetryViewer.prototype._scrollToLatestData = function() {
     this._graphDataWindow.x = latestDataPoint.x - this._graphDataWindow.width;
 };
 
-TelemetryViewer.prototype._onWindowResize = function( event ) {
+TelemetryViewer.prototype._onWindowResize = function(event) {
     var width = window.innerWidth;
     var numPoints = Math.floor(width / 10);
     this._graphOptions.points.maxNumPoints = numPoints;
 };
 
 
+/*
+    isMobileDevice
+*/
+function isMobileDevice()
+{
+    // http://stackoverflow.com/questions/11381673/detecting-a-mobile-browser
+    // http://stackoverflow.com/questions/3514784/what-is-the-best-way-to-detect-a-mobile-device-in-jquery
+    // http://detectmobilebrowsers.com/
+    if ( navigator.userAgent.match(/Android/i)||
+         navigator.userAgent.match(/webOS/i)|| 
+         navigator.userAgent.match(/iPhone/i)||
+         navigator.userAgent.match(/iPad/i)||
+         navigator.userAgent.match(/iPod/i)||
+         navigator.userAgent.match(/BlackBerry/i)||
+         navigator.userAgent.match(/Windows Phone/i) )
+    {
+        return true;
+    }
+    else 
+    {
+        return false;
+    }
+}
