@@ -56,7 +56,7 @@ function TelemetryServer() {
             var websocketConnection = request.accept(null, request.origin);
 
             // Create a new TelemetrySender for this websocket connection
-            var telemetrySender = new TelemetrySender(websocketConnection);
+            var telemetrySender = new TelemetrySender(websocketConnection, 50);
             
             // TODO: this needs to be less hacky...
             if (!this._flightControlsReceiver) {

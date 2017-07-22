@@ -1,7 +1,8 @@
 'use strict';
 
-function TelemetryViewer(canvas) {
-    this._canvas = canvas;
+function TelemetryViewer(graphCanvas, flightControlsCanvas) {
+    this._graphCanvas = graphCanvas;
+    this._flightControlsCanvas = flightControlsCanvas;
 
     // Current and backed-up graph data windows for each type of data
     var now = new Date().getTime();
@@ -14,8 +15,8 @@ function TelemetryViewer(canvas) {
         magneticHeading: { x: initialX, y: -750, width: initialWidth, height: 1500 },
         temperature: { x: initialX, y: -5, width: initialWidth, height: 40 },
         pressure: { x: initialX, y: 1005, width: initialWidth, height: 20 },
-        flightControls: { x: initialX, y: -0.6, width: initialWidth, height: 1.8 },
-        motorPulseWidth: { x: initialX, y: 1000000, width: initialWidth, height: 1000000 }
+        flightControls: { x: initialX, y: -0.7, width: initialWidth, height: 1.9 },
+        motorPulseWidth: { x: initialX, y: 950000, width: initialWidth, height: 1100000 }
     };
 
     this._graphDataTypeOptions = {
@@ -71,6 +72,13 @@ function TelemetryViewer(canvas) {
     };
 
     this._graphData = [];
+    this._maxNumGraphDataPoints = null; 
+    if ( isMobileDevice() ) {
+        this._maxNumGraphDataPoints = 20 * 1000/20;
+    }
+    else {
+        this._maxNumGraphDataPoints = 1 * 60 * 1000/20;  
+    }
 
     this._graphOptions = {
         yPropertyName: null, // initialization takes place later
@@ -107,7 +115,7 @@ function TelemetryViewer(canvas) {
     };
 
     // The graph controller is responsible for rendering the graph and handling input events to navigate in it
-    this._graphController = new GraphController(this._canvas, this._graphData, this._graphDataWindow, this._graphOptions);
+    this._graphController = new GraphController(this._graphCanvas, this._graphData, this._graphDataWindow, this._graphOptions);
 
     // When the user navigates in the graph (i.e. changes the graph data window), we need to check whether more data needs to be fetched
     this._graphController._onGraphDataWindowChange = this._onGraphDataWindowChange.bind(this);
@@ -121,6 +129,7 @@ function TelemetryViewer(canvas) {
     this._flightControlsProvider = new FlightControlsProvider();
     this._flightControlsIntervalPeriod = 20; // In milliseconds
     this._flightControlsInterval = null;
+    this._debugFakeFlightControls = true;
 
     // Data transmitter objects
     this._flightControlsSender = null;
@@ -133,6 +142,10 @@ function TelemetryViewer(canvas) {
     this._onSocketErrorHandler = this._onSocketError.bind(this);
     this._onSocketCloseHandler = this._onSocketClose.bind(this);
     this._openWebsocket();
+
+    this._onWindowResizeHandler = this._onWindowResize.bind(this);
+    window.addEventListener('resize', this._onWindowResizeHandler);
+    this._onWindowResize();
 
     // Events
     this.onGraphDataTypeChanged = null;
@@ -193,15 +206,17 @@ TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
                 flightControls = this._flightControlsProvider.flightControls;
             } else {
                 flightControls = new FlightControls();
-                // var now = performance.now();
-                // var t = Math.floor(now) % 1000 / 1000;
-                // flightControls.throttle = Math.sin(Math.PI * 2 * t) / 2 + 0.5;
-                // t = Math.floor(now) % 2300 / 2300;
-                // flightControls.rudder = Math.sin(Math.PI * 2 * t) / 2;
-                // t = Math.floor(now) % 1100 / 1100;
-                // flightControls.elevators = Math.sin(Math.PI * 2 * t) / 2;
-                // t = Math.floor(now) % 5000 / 5000;
-                // flightControls.ailerons = Math.sin(Math.PI * 2 * t) / 2;
+                if ( this._debugFakeFlightControls ) {
+                    var now = performance.now();
+                    var t = Math.floor(now) % 1000 / 1000;
+                    flightControls.throttle = Math.sin(Math.PI * 2 * t) / 2 + 0.5;
+                    t = Math.floor(now) % 2300 / 2300;
+                    flightControls.rudder = Math.sin(Math.PI * 2 * t) / 2;
+                    t = Math.floor(now) % 1100 / 1100;
+                    flightControls.elevators = Math.sin(Math.PI * 2 * t) / 2;
+                    t = Math.floor(now) % 5000 / 5000;
+                    flightControls.ailerons = Math.sin(Math.PI * 2 * t) / 2;
+                }
             }
             this._flightControlsSender.send(flightControls);
         }.bind(this),
@@ -232,15 +247,27 @@ TelemetryViewer.prototype._onSocketClose = function(/*??*/) {
 };
 
 TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySamples) {
-    for (var i = telemetrySamples.length - 1; i >= 0; i--) {
+    // Add the samples to the beginning of the graph data array
+    // The grapher draws most recent samples at beginning of array first
+    for (var i = 0; i < telemetrySamples.length; i++) {
         var telemetrySample = telemetrySamples[i];
         telemetrySample.x = telemetrySample.timestamp; // The grapher requires an 'x' property
         this._graphData.splice(0, 0, telemetrySample);
     }
-    this._render();
 
+    // If there's a maximum number of samples to hold, enforce it
+    if (typeof this._maxNumGraphDataPoints === 'number') {
+        var numExcessDataPoints = this._graphData.length - this._maxNumGraphDataPoints;
+        if (numExcessDataPoints > 0) {
+            this._graphData.splice( -numExcessDataPoints );
+        }
+    }
+
+    // TODO: move rendering somewhere else
+    this._render();
+    
     if (telemetrySamples.length > 0 && telemetrySamples[0].thisWebsocketProvidesFlightControls) {
-        var canvas = document.getElementById('flightControlsCanvas');
+        this._flightControlsCanvas.style.display = 'block';
         var flightControls = this._flightControlsProvider.flightControls;
 
         var options = null;
@@ -252,7 +279,9 @@ TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySample
                 knobStrokeColor: '#9999FF'
             };
         }
-        FlightControlsPresenter.render(canvas, flightControls, options);
+        FlightControlsPresenter.render(this._flightControlsCanvas, flightControls, options);
+    } else {
+        this._flightControlsCanvas.style.display = 'none';
     }
 };
 
@@ -314,7 +343,7 @@ TelemetryViewer.prototype._render = function() {
         this._scrollToLatestData();
     }
 
-    GraphDataPresenter.render(this._canvas, this._graphData, this._graphDataWindow, this._graphOptions);
+    GraphDataPresenter.render(this._graphCanvas, this._graphData, this._graphDataWindow, this._graphOptions);
 };
 
 TelemetryViewer.prototype._onGraphDataWindowChange = function(prevGraphDataWindow) {
@@ -335,3 +364,34 @@ TelemetryViewer.prototype._scrollToLatestData = function() {
     var latestDataPoint = graphData[0];
     this._graphDataWindow.x = latestDataPoint.x - this._graphDataWindow.width;
 };
+
+TelemetryViewer.prototype._onWindowResize = function(event) {
+    var width = window.innerWidth;
+    var numPoints = Math.floor(width / 10);
+    this._graphOptions.points.maxNumPoints = numPoints;
+};
+
+
+/*
+    isMobileDevice
+*/
+function isMobileDevice()
+{
+    // http://stackoverflow.com/questions/11381673/detecting-a-mobile-browser
+    // http://stackoverflow.com/questions/3514784/what-is-the-best-way-to-detect-a-mobile-device-in-jquery
+    // http://detectmobilebrowsers.com/
+    if ( navigator.userAgent.match(/Android/i)||
+         navigator.userAgent.match(/webOS/i)|| 
+         navigator.userAgent.match(/iPhone/i)||
+         navigator.userAgent.match(/iPad/i)||
+         navigator.userAgent.match(/iPod/i)||
+         navigator.userAgent.match(/BlackBerry/i)||
+         navigator.userAgent.match(/Windows Phone/i) )
+    {
+        return true;
+    }
+    else 
+    {
+        return false;
+    }
+}

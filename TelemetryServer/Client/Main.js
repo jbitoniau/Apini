@@ -1,10 +1,12 @@
 'use strict';
 
 function Main() {
-	var canvas = document.getElementById('graphCanvas');
-	canvas.focus();
-
-	var telemetryViewer = new TelemetryViewer(canvas);
+	var graphCanvas = document.getElementById('graphCanvas');
+	graphCanvas.focus();
+	var flightControlsCanvas = document.getElementById('flightControlsCanvas');
+	flightControlsCanvas.focus();
+	
+	var telemetryViewer = new TelemetryViewer(graphCanvas, flightControlsCanvas);
 
 	// Data types
 	var dataTypes = Object.keys(telemetryViewer._graphDataWindows);

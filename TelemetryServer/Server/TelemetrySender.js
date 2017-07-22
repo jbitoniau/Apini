@@ -1,10 +1,10 @@
 /*
     TelemetrySender
 */
-var TelemetrySender = function(websocketConnection) {
+var TelemetrySender = function(websocketConnection, updateIntervalMs) {
     this._websocketConnection = websocketConnection;
 
-    this._interval = setInterval(this.send.bind(this), 50);
+    this._interval = setInterval(this.send.bind(this), updateIntervalMs);
 
     this._maxNumTelemetrySamplesToSend = 100;
     this._telemetrySamplesToSend = [];
@@ -32,10 +32,11 @@ TelemetrySender.prototype.addTelemetrySampleToSend = function(telemetrySample) {
     var sample = {};
     Object.assign( sample, telemetrySample );
     sample.thisWebsocketProvidesFlightControls = this.thisWebsocketProvidesFlightControls;
-    this._telemetrySamplesToSend.splice(0, 0, sample);
-    if (this._telemetrySamplesToSend.length > this._maxNumTelemetrySamplesToSend) {
-        this._telemetrySamplesToSend.shift();
-        console.warn('TelemetrySender.addTelemetrySampleToSend: buffer is full, dropping oldest telemetry sample');
+    this._telemetrySamplesToSend.push(sample);
+    var numExcessSamples = this._telemetrySamplesToSend.length  - this._maxNumTelemetrySamplesToSend;
+    if ( numExcessSamples>0 ) {
+        console.warn('TelemetrySender.addTelemetrySampleToSend: buffer is full, dropping the ' + numExcessSamples + ' oldest telemetry samples');
+        this._telemetrySamplesToSend.splice(0, numExcessSamples);
     }
 };
 

@@ -1,6 +1,7 @@
 #include "FlightController.h"
 
 #include <stdio.h>
+#include <cmath>
 
 FlightController::FlightController( unsigned int minPulseWidthInUs, unsigned int maxPulseWidthInUs ): 
     mMinPulseWidthInUs(0),
@@ -23,9 +24,21 @@ FlightParameters FlightController::update( const FlightControls& flightControls,
 {
     FlightParameters flightParameters;
     unsigned int pulseWidthRange = mMaxPulseWidthInUs - mMinPulseWidthInUs;     
-    flightParameters.pulseWidthMotor0 = mMinPulseWidthInUs + (flightControls.throttle * pulseWidthRange);
-    flightParameters.pulseWidthMotor1 = mMinPulseWidthInUs + (flightControls.elevators * pulseWidthRange);
-    flightParameters.pulseWidthMotor2 = mMinPulseWidthInUs;
-    flightParameters.pulseWidthMotor3 = mMinPulseWidthInUs;
+    float t = 0.f;      // goes to 0.5 maximum for now
+    if ( flightControls.throttle>0.5f ) 
+    {
+        t = flightControls.throttle - 0.5f;
+    }
+
+    float e = 0.f;      // goes to 0.5 maximum for now
+    if ( flightControls.elevators>0.f ) 
+    {
+        e = flightControls.elevators;       
+    }
+
+    flightParameters.pulseWidthMotor0 = mMinPulseWidthInUs + (t * pulseWidthRange);
+    flightParameters.pulseWidthMotor1 = mMinPulseWidthInUs + (e * pulseWidthRange);
+    flightParameters.pulseWidthMotor2 = mMinPulseWidthInUs + (0.2 * pulseWidthRange);
+    flightParameters.pulseWidthMotor3 = mMinPulseWidthInUs + (0.4 * pulseWidthRange);
     return flightParameters;
 }
