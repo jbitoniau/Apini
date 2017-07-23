@@ -3,13 +3,6 @@
 #include "Platform/Platform.h"
 #include <vector>
 
-#if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
-extern "C" 
-{
-    #include "pwm.h"
-}
-#endif
-
 class PWMGenerator 
 {
 public:
@@ -24,6 +17,6 @@ private:
     std::vector<unsigned int> mChannelGPIOs;
     std::vector<unsigned int> mChannelWidths;     // TODO: maybe store a zero-position for each channel as well
   
-    int mPulseWidthIncrementInUs;
-    int mRPIOPWMChannelIndex;
+    // int mPulseWidthIncrementInUs;
+    // int mRPIOPWMChannelIndex;
 };

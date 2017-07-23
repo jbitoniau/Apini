@@ -19,23 +19,40 @@ Aircraft::Aircraft()
 
 void Aircraft::run()
 {
+    // std::vector<unsigned int> pwmChannelGPIOs;
+    // pwmChannelGPIOs.push_back( 25 );
+    // // pwmChannelGPIOs.push_back( 24 );
+    // // pwmChannelGPIOs.push_back( 23 );
+    // // pwmChannelGPIOs.push_back( 22 );
+    // PWMGenerator pwmGenerator(1000, 2000, pwmChannelGPIOs);
+    // printf(".\n");
+    
+    // pwmGenerator.setPulseWidthInUs( 0, 1000 );
+    // Loco::Thread::sleep( 1000 );   
+    // printf(".\n");
+    
+    // pwmGenerator.setPulseWidthInUs( 0, 1300 );   
+    // Loco::Thread::sleep( 1000 );   
+    // printf(".\n");
+    
+    // pwmGenerator.setPulseWidthInUs( 0, 1000 );   
+    // Loco::Thread::sleep( 1000 );   
+    // printf(".\n");
+    // exit(0);
+
     int framePeriod = 20;
     int startTime = Loco::Time::getTimeAsMilliseconds();
     int lastLoopIndex = static_cast<int>( std::floor( startTime/framePeriod) );
   
     FlightControlsReceiver flightControlsReceiver;
-    
     Sensors sensors;
-    
-    FlightController flightController(1000000, 2000000);
-    
+    FlightController flightController(1000, 2000);
     std::vector<unsigned int> pwmChannelGPIOs;
     pwmChannelGPIOs.push_back( 25 );
-    pwmChannelGPIOs.push_back( 24 );
-    pwmChannelGPIOs.push_back( 23 );
-    pwmChannelGPIOs.push_back( 22 );
-   // PWMGenerator pwmGenerator(1000000, 2000000, pwmChannelGPIOs);
-  
+    // pwmChannelGPIOs.push_back( 24 );
+    // pwmChannelGPIOs.push_back( 23 );
+    // pwmChannelGPIOs.push_back( 22 );
+    PWMGenerator pwmGenerator(1000, 2000, pwmChannelGPIOs);
     TelemetrySender telemetrySender;
         
     printf("Aircraft started\n");
@@ -56,7 +73,8 @@ void Aircraft::run()
         FlightParameters flightParameters;
         flightParameters = flightController.update( flightControls, sensorsSample );
 
-        // pwmGenerator.setPulseWidthInUs( 0, flightParameters.pulseWidthMotor0 );
+printf("pulseWidthMotor0:%d\n", flightParameters.pulseWidthMotor0);
+        pwmGenerator.setPulseWidthInUs( 0, flightParameters.pulseWidthMotor0 );
         // pwmGenerator.setPulseWidthInUs( 1, flightParameters.pulseWidthMotor1 );
         // pwmGenerator.setPulseWidthInUs( 2, flightParameters.pulseWidthMotor2 );
         // pwmGenerator.setPulseWidthInUs( 3, flightParameters.pulseWidthMotor3 );
