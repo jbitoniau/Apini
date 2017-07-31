@@ -139,12 +139,10 @@ bool PWMGenerator::setPulseWidthInUs( std::size_t channelIndex, unsigned int wid
     NOP PWMGenerator implementation
 */
 PWMGenerator::PWMGenerator( unsigned int minPulseWidthInUs, unsigned int maxPulseWidthInUs, const std::vector<unsigned int>& channelGPIOs ):
-    mMinPulseWidthInUs(0),
-    mMaxPulseWidthInUs(0),
+    mMinPulseWidthInUs(minPulseWidthInUs),
+    mMaxPulseWidthInUs(maxPulseWidthInUs),
     mChannelGPIOs(),
-    mChannelWidths(),
-    mPulseWidthIncrementInUs(10), 
-    mRPIOPWMChannelIndex(0) 
+    mChannelWidths()
 {
     if ( mMinPulseWidthInUs<=mMaxPulseWidthInUs )
     {
@@ -182,12 +180,12 @@ bool PWMGenerator::setPulseWidthInUs( std::size_t channelIndex, unsigned int wid
    
     if ( widthInUs<mMinPulseWidthInUs )
     {
-        printf("PWMGenerator::setPulseWidthInUs: widthInUs %d for channel %d is less than minimum %d\n", widthInUs, channelIndex, mMinPulseWidthInUs );
+        printf("PWMGenerator::setPulseWidthInUs: widthInUs %d for channel %lu is less than minimum %d\n", widthInUs, channelIndex, mMinPulseWidthInUs );
         widthInUs = mMinPulseWidthInUs;
     }
     else if ( widthInUs>mMaxPulseWidthInUs )
     {
-        printf("PWMGenerator::setPulseWidthInUs: widthInUs %d for channel %d is greater than minimum %d\n", widthInUs, channelIndex, mMaxPulseWidthInUs );
+        printf("PWMGenerator::setPulseWidthInUs: widthInUs %d for channel %lu is greater than minimum %d\n", widthInUs, channelIndex, mMaxPulseWidthInUs );
         widthInUs = mMaxPulseWidthInUs;
     }
 
