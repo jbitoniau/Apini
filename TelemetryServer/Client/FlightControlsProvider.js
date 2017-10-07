@@ -45,6 +45,16 @@ FlightControlsProvider.prototype.update = function() {
         gamepad = FlightControlsProvider._getGamepadByIndex(this._gamepadIndex);
     }
 
+    if ( gamepad.buttons.length<=6 ) {
+        console.warn("Can't find trigger button on gamepad");
+        return false;
+    }
+    var leftTrigger = gamepad.buttons[6].value;
+    if ( leftTrigger<0.8 ) {
+        this._flightControls.clear();
+        return true;
+    } 
+
     // Get stick positions
     var axes = gamepad.axes;                // Values for axes are in the [0..1] range
     var stick1Position = { x: 0, y: 0 };
