@@ -224,8 +224,8 @@ TelemetryViewer.prototype._closeWebsocket = function() {
     this._websocket = null;
 };
 
-var gNextTime = performance.now();
-var gLastTime = gNextTime;
+// var gNextTime = performance.now();
+// var gLastTime = gNextTime;
 
 TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
     this._isConnected = true;
@@ -233,8 +233,6 @@ TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
     // FlightControlsSender
     this._flightControlsSender = new FlightControlsSender(this._websocket);
     
-//var lastTime = performance.now();
-
     var getAndSendFlightControls = function() {
          var flightControls = null;
         this._flightControlsProvider.update();
@@ -243,15 +241,15 @@ TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
         } else {
             flightControls = new FlightControls();
 
-var n = performance.now();
-if (n > gNextTime) {
-    gNextTime = n + 1000;
-    //console.log('FlightControlsProvider: ' + n);
-    flightControls.throttle = 0.51;
-    gLastTime = n;
-} else {
-    flightControls.throttle = 0;
-}
+// var n = performance.now();
+// if (n > gNextTime) {
+//     gNextTime = n + 1000;
+//     //console.log('FlightControlsProvider: ' + n);
+//     flightControls.throttle = 0.51;
+//     gLastTime = n;
+// } else {
+//     flightControls.throttle = 0;
+// }
 
             if ( this._debugFakeFlightControls ) {
                 var now = performance.now();
@@ -266,12 +264,6 @@ if (n > gNextTime) {
             }
         }
         this._flightControlsSender.send(flightControls);
-        
-// var time = performance.now();
-// var dt = time-lastTime;
-// console.log("control dt:" + dt );
-// lastTime = time;
-
     }.bind(this);
 
     this._flightControlsInterval = setInterval( getAndSendFlightControls, this._flightControlsIntervalPeriod );
@@ -302,16 +294,14 @@ TelemetryViewer.prototype._onSocketClose = function(/*??*/) {
 TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySamples) {
     // Add the samples to the beginning of the graph data array
     // The grapher draws most recent samples at beginning of array first
-var n = performance.now();
+    //var n = performance.now();
     for (var i = 0; i < telemetrySamples.length; i++) {
         var telemetrySample = telemetrySamples[i];
         telemetrySample.x = telemetrySample.timestamp; // The grapher requires an 'x' property
         this._graphData.splice(0, 0, telemetrySample);
-
-        if (Math.abs( telemetrySample.throttle-0.51 )<=0.01 ) {
-           // console.log('_onTelemetrySamplesReceived:' + n + " delta:" + (n-gLastTime).toString() );
-            console.log(telemetrySample.throttle + " delta:" + (n-gLastTime).toString() );
-        }
+        // if (Math.abs( telemetrySample.throttle-0.51 )<=0.01 ) {
+        //     console.log(telemetrySample.throttle + " delta:" + (n-gLastTime).toString() );
+        // }
     }
 
     // If there's a maximum number of samples to hold, enforce it
