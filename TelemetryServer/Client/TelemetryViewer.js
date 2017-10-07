@@ -158,7 +158,7 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
 
     // Flight controls
     this._flightControlsProvider = new FlightControlsProvider();
-    this._flightControlsIntervalPeriod = 10; // In milliseconds
+    this._flightControlsIntervalPeriod = 20; // In milliseconds
     this._flightControlsInterval = null;
     this._debugFakeFlightControls = false;
 
@@ -233,7 +233,7 @@ TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
     // FlightControlsSender
     this._flightControlsSender = new FlightControlsSender(this._websocket);
     
-var lastTime = performance.now();
+//var lastTime = performance.now();
 
     var getAndSendFlightControls = function() {
          var flightControls = null;
@@ -246,7 +246,7 @@ var lastTime = performance.now();
 var n = performance.now();
 if (n > gNextTime) {
     gNextTime = n + 1000;
-    console.log('FlightControlsProvider: ' + n);
+    //console.log('FlightControlsProvider: ' + n);
     flightControls.throttle = 0.51;
     gLastTime = n;
 } else {
@@ -267,11 +267,10 @@ if (n > gNextTime) {
         }
         this._flightControlsSender.send(flightControls);
         
-var time = performance.now();
-var dt = time-lastTime;
-console.log("control dt:" + dt );
-lastTime = time;
-
+// var time = performance.now();
+// var dt = time-lastTime;
+// console.log("control dt:" + dt );
+// lastTime = time;
 
     }.bind(this);
 
@@ -303,14 +302,15 @@ TelemetryViewer.prototype._onSocketClose = function(/*??*/) {
 TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySamples) {
     // Add the samples to the beginning of the graph data array
     // The grapher draws most recent samples at beginning of array first
+var n = performance.now();
     for (var i = 0; i < telemetrySamples.length; i++) {
         var telemetrySample = telemetrySamples[i];
         telemetrySample.x = telemetrySample.timestamp; // The grapher requires an 'x' property
         this._graphData.splice(0, 0, telemetrySample);
 
-        var n = performance.now();
-        if (telemetrySample.throttle !== 0) {
-            console.log('_onTelemetrySamplesReceived:' + n + " delta:" + (n-gLastTime).toString() );
+        if (Math.abs( telemetrySample.throttle-0.51 )<=0.01 ) {
+           // console.log('_onTelemetrySamplesReceived:' + n + " delta:" + (n-gLastTime).toString() );
+            console.log(telemetrySample.throttle + " delta:" + (n-gLastTime).toString() );
         }
     }
 

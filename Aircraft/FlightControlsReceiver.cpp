@@ -73,9 +73,10 @@ bool FlightControlsReceiver::receive( FlightControls& flightControls )
     //         printf("Received %d flight controls packets in one loop (no more in queue)\n", numPacketsReceived );
     //     }
     // }
-    if ( numPacketsReceived==0 ) {
-        printf("0");
-    }
+    
+    // if ( numPacketsReceived==0 ) {
+    //     printf("0");
+    // }
     if ( flightControlsReceived ) {
         flightControls = tempFlightControls;
     }

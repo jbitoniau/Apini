@@ -40,7 +40,7 @@ void Aircraft::run()
     // printf(".\n");
     // exit(0);
 
-    int framePeriod = 20;
+    int framePeriod = 10;
     int startTime = Loco::Time::getTimeAsMilliseconds();
     int lastLoopIndex = static_cast<int>( std::floor( startTime/framePeriod) );
   
@@ -83,6 +83,8 @@ void Aircraft::run()
         telemetrySender.send( timestamp, flightControls, sensorsSample, flightParameters );
 
         int loopIndex = static_cast<int>( std::floor( Loco::Time::getTimeAsMilliseconds()/framePeriod) );
+
+        
         while ( loopIndex==lastLoopIndex )
         {
             Loco::Thread::sleep( 1 );
