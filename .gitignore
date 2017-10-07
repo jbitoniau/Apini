@@ -1,5 +1,6 @@
 node_modules
 _build_
+bin
 *.sublime-workspace
 .DS_Store
 ._.DS_Store
