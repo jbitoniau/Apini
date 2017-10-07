@@ -6,6 +6,9 @@
 FlightControlsReceiver::FlightControlsReceiver()
 {
     socket = new Loco::UDPSocket( localPort );
+    socket->setReceiveBufferSizeInBytes( bufferSize );
+    socket->setSendBufferSizeInBytes( bufferSize );
+    
     printf("FlightControlsReceiver: on port %d\n", localPort);
     buffer = new char[bufferSize];
     memset( buffer, 0, bufferSize );
@@ -22,18 +25,31 @@ FlightControlsReceiver::~FlightControlsReceiver()
     std::string sourceAddress;
     unsigned short int sourcePort;
     int errorCode;
-    unsigned int numBytesReceived = socket->receive2( buffer, bufferSize, sourceAddress, sourcePort, errorCode );
-    /*if ( errorCode!=0 )
+    unsigned int numBytesReceived = 0;      
+    // TODO: add a max number of loops to go through (to avoid blocking here forever)
+    bool receivedData = false;
+    int numPacketReceived = 0;
+    do 
     {
-        printf("Error receiving data %d", errorCode);
-        return false;
-    }*/
-    if ( numBytesReceived==0 )
-    {
-        memset( buffer, 0, bufferSize );
-        return false;
+        numBytesReceived = socket->receive2( buffer, bufferSize, sourceAddress, sourcePort, errorCode );
+        if ( numBytesReceived!=0 )
+        {
+            numPacketReceived++;
+            bool deserializedOK = FlightControlsReceiver::deserializeFlightControls( buffer, numBytesReceived, flightControls );
+            if ( deserializedOK ) 
+            {
+                receivedData = true;
+            }
+            memset( buffer, 0, bufferSize );
+        }
+        /*if ( errorCode!=0 )
+        {
+            printf("Error receiving data %d", errorCode);
+            return false;
+        }*/
     }
-
+    while ( numBytesReceived!=0 );
+        
    // printf("FlightControlsReceiver::receive: from:%s:%d (%d bytes): ", sourceAddress.c_str(), sourcePort, numBytesReceived);
     // for ( int i=0; i<numBytesReceived; i++ )
     // {
@@ -42,15 +58,12 @@ FlightControlsReceiver::~FlightControlsReceiver()
     // } 
     // printf("\n");
 
-/*    if ( numBytesReceived==0 )
-    {
-        return false;
-    }
-*/
-    bool deserializedOK = FlightControlsReceiver::deserializeFlightControls( buffer, numBytesReceived, flightControls );
-    memset( buffer, 0, bufferSize );
-   
-    return deserializedOK;
+        if ( numPacketReceived>1)
+        {
+            printf("Received %d flight controls packets\n", numPacketReceived );
+        }
+
+    return receivedData;
  }
 
 bool FlightControlsReceiver::deserializeFlightControls( char* buffer, unsigned int bufferSize, FlightControls& flightControls )

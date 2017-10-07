@@ -18,7 +18,7 @@ private:
     static int serializeTelemetry( std::uint32_t timestamp, const FlightControls& flightControls, const SensorsSample& sensorsSample, const FlightParameters& flightParameters, char* buffer );
     
     Loco::UDPSocket* socket;
-    const int bufferSize = 512;
+    const int bufferSize = 120;
     char* buffer;
 
     const unsigned int localPort = 8082;
