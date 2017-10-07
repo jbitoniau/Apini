@@ -49,7 +49,7 @@ void Aircraft::run()
     FlightController flightController(1000, 2000);
     std::vector<unsigned int> pwmChannelGPIOs;
     pwmChannelGPIOs.push_back( 25 );
-    // pwmChannelGPIOs.push_back( 24 );
+    pwmChannelGPIOs.push_back( 24 );
     // pwmChannelGPIOs.push_back( 23 );
     // pwmChannelGPIOs.push_back( 22 );
     PWMGenerator pwmGenerator(1000, 2000, pwmChannelGPIOs);
@@ -73,8 +73,9 @@ void Aircraft::run()
         FlightParameters flightParameters;
         flightParameters = flightController.update( flightControls, sensorsSample );
 
-printf("pulseWidthMotor0:%d\n", flightParameters.pulseWidthMotor0);
+//printf("pulseWidthMotor0:%d\n", flightParameters.pulseWidthMotor0);
         pwmGenerator.setPulseWidthInUs( 0, flightParameters.pulseWidthMotor0 );
+        pwmGenerator.setPulseWidthInUs( 1, flightParameters.pulseWidthMotor1 );
         // pwmGenerator.setPulseWidthInUs( 1, flightParameters.pulseWidthMotor1 );
         // pwmGenerator.setPulseWidthInUs( 2, flightParameters.pulseWidthMotor2 );
         // pwmGenerator.setPulseWidthInUs( 3, flightParameters.pulseWidthMotor3 );

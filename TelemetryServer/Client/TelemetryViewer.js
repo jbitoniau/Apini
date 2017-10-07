@@ -16,7 +16,7 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
         temperature: { x: initialX, y: -5, width: initialWidth, height: 40 },
         pressure: { x: initialX, y: 1005, width: initialWidth, height: 20 },
         flightControls: { x: initialX, y: -0.7, width: initialWidth, height: 1.9 },
-        motorPulseWidth: { x: initialX, y: 950000, width: initialWidth, height: 1100000 }
+        motorPulseWidth: { x: initialX, y: 950, width: initialWidth, height: 1100 }
     };
 
     this._graphDataTypeOptions = {
