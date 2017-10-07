@@ -103,12 +103,12 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
     };
 
     this._graphData = [];
-    this._maxNumGraphDataPoints = null; 
-    if ( isMobileDevice() ) {
-        this._maxNumGraphDataPoints = 20 * 1000/20;
+    this._maxNumGraphDataPoints = null;
+    if (isMobileDevice()) {
+        this._maxNumGraphDataPoints = 20 * 1000 / 20;
     }
     else {
-        this._maxNumGraphDataPoints = 1 * 60 * 1000/20;  
+        this._maxNumGraphDataPoints = 1 * 60 * 1000 / 20;
     }
 
     this._graphOptions = {
@@ -224,6 +224,9 @@ TelemetryViewer.prototype._closeWebsocket = function() {
     this._websocket = null;
 };
 
+var gNextTime = performance.now();
+var gLastTime = gNextTime;
+
 TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
     this._isConnected = true;
 
@@ -239,6 +242,17 @@ var lastTime = performance.now();
             flightControls = this._flightControlsProvider.flightControls;
         } else {
             flightControls = new FlightControls();
+
+var n = performance.now();
+if (n > gNextTime) {
+    gNextTime = n + 1000;
+    console.log('FlightControlsProvider: ' + n);
+    flightControls.throttle = 0.51;
+    gLastTime = n;
+} else {
+    flightControls.throttle = 0;
+}
+
             if ( this._debugFakeFlightControls ) {
                 var now = performance.now();
                 var t = Math.floor(now) % 1000 / 1000;
@@ -253,10 +267,12 @@ var lastTime = performance.now();
         }
         this._flightControlsSender.send(flightControls);
         
-        var time = performance.now();
-        var dt = time-lastTime;
-        console.log("control dt:" + dt );
-        lastTime = time;
+var time = performance.now();
+var dt = time-lastTime;
+console.log("control dt:" + dt );
+lastTime = time;
+
+
     }.bind(this);
 
     this._flightControlsInterval = setInterval( getAndSendFlightControls, this._flightControlsIntervalPeriod );
@@ -291,19 +307,24 @@ TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySample
         var telemetrySample = telemetrySamples[i];
         telemetrySample.x = telemetrySample.timestamp; // The grapher requires an 'x' property
         this._graphData.splice(0, 0, telemetrySample);
+
+        var n = performance.now();
+        if (telemetrySample.throttle !== 0) {
+            console.log('_onTelemetrySamplesReceived:' + n + " delta:" + (n-gLastTime).toString() );
+        }
     }
 
     // If there's a maximum number of samples to hold, enforce it
     if (typeof this._maxNumGraphDataPoints === 'number') {
         var numExcessDataPoints = this._graphData.length - this._maxNumGraphDataPoints;
         if (numExcessDataPoints > 0) {
-            this._graphData.splice( -numExcessDataPoints );
+            this._graphData.splice(-numExcessDataPoints);
         }
     }
 
     // TODO: move rendering somewhere else
     this._render();
-    
+
     if (telemetrySamples.length > 0 && telemetrySamples[0].thisWebsocketProvidesFlightControls) {
         this._flightControlsCanvas.style.display = 'block';
         var flightControls = this._flightControlsProvider.flightControls;
@@ -409,27 +430,24 @@ TelemetryViewer.prototype._onWindowResize = function(event) {
     this._graphOptions.points.maxNumPoints = numPoints;
 };
 
-
 /*
     isMobileDevice
 */
-function isMobileDevice()
-{
+function isMobileDevice() {
     // http://stackoverflow.com/questions/11381673/detecting-a-mobile-browser
     // http://stackoverflow.com/questions/3514784/what-is-the-best-way-to-detect-a-mobile-device-in-jquery
     // http://detectmobilebrowsers.com/
-    if ( navigator.userAgent.match(/Android/i)||
-         navigator.userAgent.match(/webOS/i)|| 
-         navigator.userAgent.match(/iPhone/i)||
-         navigator.userAgent.match(/iPad/i)||
-         navigator.userAgent.match(/iPod/i)||
-         navigator.userAgent.match(/BlackBerry/i)||
-         navigator.userAgent.match(/Windows Phone/i) )
-    {
+    if (
+        navigator.userAgent.match(/Android/i) ||
+        navigator.userAgent.match(/webOS/i) ||
+        navigator.userAgent.match(/iPhone/i) ||
+        navigator.userAgent.match(/iPad/i) ||
+        navigator.userAgent.match(/iPod/i) ||
+        navigator.userAgent.match(/BlackBerry/i) ||
+        navigator.userAgent.match(/Windows Phone/i)
+    ) {
         return true;
-    }
-    else 
-    {
+    } else {
         return false;
     }
 }
