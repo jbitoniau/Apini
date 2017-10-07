@@ -21,7 +21,6 @@ TelemetrySender::~TelemetrySender()
 bool TelemetrySender::send( std::uint32_t timestamp, const FlightControls& flightControls, const SensorsSample& sensorsSample, const FlightParameters& flightParameters ) 
 {
     int numBytesToSend = serializeTelemetry( timestamp, flightControls, sensorsSample, flightParameters, buffer );   
-  printf("tel %d\n", numBytesToSend);
     int numBytesSent = socket->send( buffer, numBytesToSend, "127.0.0.1", remotePort );
     bool result = (numBytesToSend==numBytesSent);
     return result;

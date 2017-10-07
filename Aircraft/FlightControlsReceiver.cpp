@@ -12,6 +12,8 @@ FlightControlsReceiver::FlightControlsReceiver()
     printf("FlightControlsReceiver: on port %d\n", localPort);
     buffer = new char[bufferSize];
     memset( buffer, 0, bufferSize );
+
+
 }
 
 FlightControlsReceiver::~FlightControlsReceiver()
@@ -20,25 +22,30 @@ FlightControlsReceiver::~FlightControlsReceiver()
     delete[] buffer;
 }
 
- bool FlightControlsReceiver::receive( FlightControls& flightControls )
- {
+// Check the socket for any packet received, read as many as there are ready to flush the buffer, 
+// but stop after a certain number of them. Update the flight controls corresponding to the last 
+// packet received (i.e the most recent) that got fully deserialized. Return true if it did, and
+// false if there no packet was received or none was deserialized properly.
+bool FlightControlsReceiver::receive( FlightControls& flightControls )
+{
     std::string sourceAddress;
     unsigned short int sourcePort;
     int errorCode;
     unsigned int numBytesReceived = 0;      
-    // TODO: add a max number of loops to go through (to avoid blocking here forever)
-    bool receivedData = false;
-    int numPacketReceived = 0;
+    bool flightControlsReceived = false;
+    int maxNumPacketsReceived = 10;  // This method will stop tring to receive/read packets after this number of packets received. This is to avoid blocking forever when socket is saturated
+    int numPacketsReceived = 0;
+    FlightControls tempFlightControls;
     do 
     {
         numBytesReceived = socket->receive2( buffer, bufferSize, sourceAddress, sourcePort, errorCode );
         if ( numBytesReceived!=0 )
         {
-            numPacketReceived++;
-            bool deserializedOK = FlightControlsReceiver::deserializeFlightControls( buffer, numBytesReceived, flightControls );
+            numPacketsReceived++;
+            bool deserializedOK = FlightControlsReceiver::deserializeFlightControls( buffer, numBytesReceived, tempFlightControls );
             if ( deserializedOK ) 
             {
-                receivedData = true;
+                flightControlsReceived = true;
             }
             memset( buffer, 0, bufferSize );
         }
@@ -48,9 +55,9 @@ FlightControlsReceiver::~FlightControlsReceiver()
             return false;
         }*/
     }
-    while ( numBytesReceived!=0 );
+    while ( numBytesReceived!=0 && numPacketsReceived<maxNumPacketsReceived );
         
-   // printf("FlightControlsReceiver::receive: from:%s:%d (%d bytes): ", sourceAddress.c_str(), sourcePort, numBytesReceived);
+    // printf("FlightControlsReceiver::receive: from:%s:%d (%d bytes): ", sourceAddress.c_str(), sourcePort, numBytesReceived);
     // for ( int i=0; i<numBytesReceived; i++ )
     // {
     //     unsigned char c = buffer[i];
@@ -58,13 +65,22 @@ FlightControlsReceiver::~FlightControlsReceiver()
     // } 
     // printf("\n");
 
-        if ( numPacketReceived>1)
-        {
-            printf("Received %d flight controls packets\n", numPacketReceived );
-        }
-
-    return receivedData;
- }
+    // if ( numPacketsReceived>1)
+    // {
+    //     if (numBytesReceived!=0) {
+    //         printf("Received %d flight controls packets in one loop (more in queue)\n", numPacketsReceived );
+    //     } else {
+    //         printf("Received %d flight controls packets in one loop (no more in queue)\n", numPacketsReceived );
+    //     }
+    // }
+    if ( numPacketsReceived==0 ) {
+        printf("0");
+    }
+    if ( flightControlsReceived ) {
+        flightControls = tempFlightControls;
+    }
+    return flightControlsReceived;
+}
 
 bool FlightControlsReceiver::deserializeFlightControls( char* buffer, unsigned int bufferSize, FlightControls& flightControls )
 {

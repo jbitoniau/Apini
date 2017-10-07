@@ -1,5 +1,36 @@
 'use strict';
 
+// /*
+//     AnimationFrameBaseInterval
+// */  
+// function AnimationFrameBaseInterval(callback, framePeriodMs) {
+//     this._callback = callback;
+//     this._framePeriodMs = framePeriodMs;
+
+//     this._startTime = performance.now();
+//     this._lastFrameIndex = null;
+
+//     this._onAnimationFrameHandler = this._onAnimationFrame.bind(this);
+//     this.animationFrameCallback = new AnimationFrameCallback( this._onAnimationFrameHandler );
+//     this.animationFrameCallback.start();
+// }
+
+// AnimationFrameBaseInterval.prototype.stop = function() {
+//     this.animationFrameCallback.stop();    
+// };
+
+// AnimationFrameBaseInterval.prototype._onAnimationFrame = function(interval) {
+//     var time = performance.now();
+//     var frameIndex = Math.floor( time/this._framePeriodMs );
+//     if ( frameIndex!==this._lastFrameIndex ) {
+//         this._callback();
+//         this._lastFrameIndex = frameIndex;
+//     }
+// };
+
+/*
+    TelemetryViewer
+*/
 function TelemetryViewer(graphCanvas, flightControlsCanvas) {
     this._graphCanvas = graphCanvas;
     this._flightControlsCanvas = flightControlsCanvas;
@@ -127,7 +158,7 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
 
     // Flight controls
     this._flightControlsProvider = new FlightControlsProvider();
-    this._flightControlsIntervalPeriod = 20; // In milliseconds
+    this._flightControlsIntervalPeriod = 10; // In milliseconds
     this._flightControlsInterval = null;
     this._debugFakeFlightControls = false;
 
@@ -198,30 +229,37 @@ TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
 
     // FlightControlsSender
     this._flightControlsSender = new FlightControlsSender(this._websocket);
-    this._flightControlsInterval = setInterval(
-        function() {
-            var flightControls = null;
-            this._flightControlsProvider.update();
-            if (this._flightControlsProvider.isGamepadConnected()) {
-                flightControls = this._flightControlsProvider.flightControls;
-            } else {
-                flightControls = new FlightControls();
-                if ( this._debugFakeFlightControls ) {
-                    var now = performance.now();
-                    var t = Math.floor(now) % 1000 / 1000;
-                    flightControls.throttle = Math.sin(Math.PI * 2 * t) / 2 + 0.5;
-                    t = Math.floor(now) % 2300 / 2300;
-                    flightControls.rudder = Math.sin(Math.PI * 2 * t) / 2;
-                    t = Math.floor(now) % 1100 / 1100;
-                    flightControls.elevators = Math.sin(Math.PI * 2 * t) / 2;
-                    t = Math.floor(now) % 5000 / 5000;
-                    flightControls.ailerons = Math.sin(Math.PI * 2 * t) / 2;
-                }
+    
+var lastTime = performance.now();
+
+    var getAndSendFlightControls = function() {
+         var flightControls = null;
+        this._flightControlsProvider.update();
+        if (this._flightControlsProvider.isGamepadConnected()) {
+            flightControls = this._flightControlsProvider.flightControls;
+        } else {
+            flightControls = new FlightControls();
+            if ( this._debugFakeFlightControls ) {
+                var now = performance.now();
+                var t = Math.floor(now) % 1000 / 1000;
+                flightControls.throttle = Math.sin(Math.PI * 2 * t) / 2 + 0.5;
+                t = Math.floor(now) % 2300 / 2300;
+                flightControls.rudder = Math.sin(Math.PI * 2 * t) / 2;
+                t = Math.floor(now) % 1100 / 1100;
+                flightControls.elevators = Math.sin(Math.PI * 2 * t) / 2;
+                t = Math.floor(now) % 5000 / 5000;
+                flightControls.ailerons = Math.sin(Math.PI * 2 * t) / 2;
             }
-            this._flightControlsSender.send(flightControls);
-        }.bind(this),
-        this._flightControlsIntervalPeriod
-    );
+        }
+        this._flightControlsSender.send(flightControls);
+        
+        var time = performance.now();
+        var dt = time-lastTime;
+        console.log("control dt:" + dt );
+        lastTime = time;
+    }.bind(this);
+
+    this._flightControlsInterval = setInterval( getAndSendFlightControls, this._flightControlsIntervalPeriod );
 
     // TelemetryReceiver
     this._telemetryReceiver = new TelemetryReceiver(this._websocket);

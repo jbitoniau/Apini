@@ -57,11 +57,11 @@ void Aircraft::run()
         
     printf("Aircraft started\n");
     std::uint32_t timestamp = 0;
+    FlightControls flightControls;
     while (true)
     {   
         timestamp = Loco::Time::getTimeAsMilliseconds();
-
-        FlightControls flightControls;
+        
         if ( flightControlsReceiver.receive(flightControls) )
         {
             //printf("throttle:%f rudder:%f elevators:%f ailerons:%f\n", flightControls.throttle, flightControls.rudder, flightControls.elevators, flightControls.ailerons);
