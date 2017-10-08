@@ -57,33 +57,44 @@ void Aircraft::run()
         
     printf("Aircraft started\n");
     std::uint32_t timestamp = 0;
+    std::uint32_t lastFlightControlsTimestamp = 0;    
+    
+    std::uint32_t flightControlsTimeout = 1000;
+
     FlightControls flightControls;
+    FlightParameters flightParameters;
     while (true)
     {   
         timestamp = Loco::Time::getTimeAsMilliseconds();
         
+        SensorsSample sensorsSample;
+        sensorsSample = sensors.getSensorsSample();
+        
         if ( flightControlsReceiver.receive(flightControls) )
         {
+            lastFlightControlsTimestamp = timestamp;
             //printf("throttle:%f rudder:%f elevators:%f ailerons:%f\n", flightControls.throttle, flightControls.rudder, flightControls.elevators, flightControls.ailerons);
         }
 
-        SensorsSample sensorsSample;
-        sensorsSample = sensors.getSensorsSample();
-    
-        FlightParameters flightParameters;
-        flightParameters = flightController.update( flightControls, sensorsSample );
+        if ( timestamp<=lastFlightControlsTimestamp+flightControlsTimeout )
+        {
+            flightParameters = flightController.update( flightControls, sensorsSample );
+        } 
+        else 
+        {
+            flightParameters.powerMotor0 = 0;
+            flightParameters.powerMotor1 = 0;
+            flightParameters.powerMotor2 = 0;
+            flightParameters.powerMotor3 = 0;
+            // + maintain flight controller in a reset mode... 
+        }
 
-//printf("pulseWidthMotor0:%d\n", flightParameters.pulseWidthMotor0);
-        pwmGenerator.setPulseWidthInUs( 0, flightParameters.pulseWidthMotor0 );
-        pwmGenerator.setPulseWidthInUs( 1, flightParameters.pulseWidthMotor1 );
-        // pwmGenerator.setPulseWidthInUs( 1, flightParameters.pulseWidthMotor1 );
-        // pwmGenerator.setPulseWidthInUs( 2, flightParameters.pulseWidthMotor2 );
-        // pwmGenerator.setPulseWidthInUs( 3, flightParameters.pulseWidthMotor3 );
+        pwmGenerator.setPower( 0, flightParameters.powerMotor0 );
+        pwmGenerator.setPower( 1, flightParameters.powerMotor1 );
 
         telemetrySender.send( timestamp, flightControls, sensorsSample, flightParameters );
 
         int loopIndex = static_cast<int>( std::floor( Loco::Time::getTimeAsMilliseconds()/framePeriod) );
-
         
         while ( loopIndex==lastLoopIndex )
         {

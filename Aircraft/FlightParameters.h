@@ -4,9 +4,9 @@ class FlightParameters
 {
 public:
     FlightParameters();
-
-    unsigned int pulseWidthMotor0;      // in microseconds
-    unsigned int pulseWidthMotor1;
-    unsigned int pulseWidthMotor2;
-    unsigned int pulseWidthMotor3;
+    
+    float powerMotor0;  // [0..1]
+    float powerMotor1;
+    float powerMotor2;
+    float powerMotor3;
 };

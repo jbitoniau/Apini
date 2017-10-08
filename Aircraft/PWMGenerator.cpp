@@ -82,22 +82,50 @@ PWMGenerator::PWMGenerator( unsigned int minPulseWidthInUs, unsigned int maxPuls
     // }    
 }
 
-unsigned int PWMGenerator::getPulseWidthInUs( std::size_t channelIndex ) const
+// float PWMGenerator::getPower( std::size_t channelIndex ) const 
+// {
+//     return -1;
+// }   
+
+bool PWMGenerator::setPower( std::size_t channelIndex, float value )
 {
-    if ( channelIndex>=mChannelWidths.size() )
+    if ( channelIndex>=getNumChannels() )
     {
-        printf("PWMGenerator::setPulseWidthInUs: index %d out of range %d\n", channelIndex, mChannelWidths.size());
-        return mMinPulseWidthInUs;         
+        printf("PWMGenerator::setPower: index %d out of range %d\n", channelIndex, getNumChannels());
+        return false;         
     }
-    return mChannelWidths[channelIndex];
-}   
+
+    if ( value<0 || value>1 )
+    {
+        printf("PWMGenerator::setPower: value %f for channel %d is not in the [0..1] range\n", value, channelIndex );
+        return false;
+    }
+
+    unsigned int pulseWidthRange = mMaxPulseWidthInUs - mMinPulseWidthInUs;     
+    unsigned int pulseWidth = mMinPulseWidthInUs + static_cast<unsigned int>( value * static_cast<float>(pulseWidthRange) );
+
+    setPulseWidthInUs(channelIndex, pulseWidth);
+
+    return true;
+}
+
+// unsigned int PWMGenerator::getPulseWidthInUs( std::size_t channelIndex ) const
+// {
+//     if ( channelIndex>=getNumChannels() )
+//     {
+//         printf("PWMGenerator::getPulseWidthInUs: index %d out of range %d\n", channelIndex, getNumChannels());
+//         return mMinPulseWidthInUs;         
+//     }
+//     return mChannelWidths[channelIndex];
+// }   
+
 
 bool PWMGenerator::setPulseWidthInUs( std::size_t channelIndex, unsigned int widthInUs )
 {
-    if ( channelIndex>=mChannelWidths.size() )
+    if ( channelIndex>=getNumChannels() )
     {
-        printf("PWMGenerator::setPulseWidthInUs: index %d out of range %d\n", channelIndex, mChannelWidths.size());
-        return mMinPulseWidthInUs;         
+        printf("PWMGenerator::setPulseWidthInUs: index %d out of range %d\n", channelIndex, getNumChannels());
+        return false;         
     }
    
     if ( widthInUs<mMinPulseWidthInUs )
@@ -111,16 +139,6 @@ bool PWMGenerator::setPulseWidthInUs( std::size_t channelIndex, unsigned int wid
         widthInUs = mMaxPulseWidthInUs;
     }
     
-    // int gpio = mChannelGPIOs[channelIndex];
-    // int widthInIncrements = widthInUs / mPulseWidthIncrementInUs;
-    // //printf("PWMGenerator::setPulseWidthInUs: add_channel_pulse(%d, %d, 0, %d)\n", mRPIOPWMChannelIndex, gpio, widthInIncrements);
-    // int results = add_channel_pulse( mRPIOPWMChannelIndex, gpio, 0, widthInIncrements);
-    // if ( results!=EXIT_SUCCESS )
-    // {
-    //     printf("PWMGenerator::setPulseWidthInUs: add_channel_pulse failed. %s\n", get_error_message());
-    //     return false;
-    // }
-    
     int gpio = mChannelGPIOs[channelIndex];
     int result = gpioServo( gpio, widthInUs );
     if ( result<0 )
@@ -133,6 +151,15 @@ bool PWMGenerator::setPulseWidthInUs( std::size_t channelIndex, unsigned int wid
     return true;
 }
       
+// void PWMGenerator::clearAll() 
+// {
+//     std::size_t numChannels = getNumChannels();
+//     for ( std::size_t i=0; i<numChannels; i++ ) 
+//     {
+//         setPulseWidthInUs(i, getMinPulseWidth() );
+//     }
+// }
+
 #else
 
 /*
@@ -165,14 +192,14 @@ PWMGenerator::PWMGenerator( unsigned int minPulseWidthInUs, unsigned int maxPuls
 
 unsigned int PWMGenerator::getPulseWidthInUs( std::size_t channelIndex ) const
 {
-    if ( channelIndex>=mChannelWidths.size() )
+    if ( channelIndex>=getNumChannels() )
         return mMinPulseWidthInUs;
     return mChannelWidths[channelIndex];
 }
 
 bool PWMGenerator::setPulseWidthInUs( std::size_t channelIndex, unsigned int widthInUs )
 {
-    if ( channelIndex>=mChannelWidths.size() )
+    if ( channelIndex>=getNumChannels() )
     {
         printf("PWMGenerator::setPulseWidthInUs: index out of range\n");
         return mMinPulseWidthInUs;         
