@@ -47,7 +47,8 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
         temperature: { x: initialX, y: -5, width: initialWidth, height: 40 },
         pressure: { x: initialX, y: 1005, width: initialWidth, height: 20 },
         flightControls: { x: initialX, y: -0.7, width: initialWidth, height: 1.9 },
-        motorPulseWidth: { x: initialX, y: 950, width: initialWidth, height: 1100 }
+        motorPowerLevels: { x: initialX, y: -0.1, width: initialWidth, height: 1.2 },
+        motorPulseWidths: { x: initialX, y: 950, width: initialWidth, height: 1100 }
     };
 
     this._graphDataTypeOptions = {
@@ -93,8 +94,15 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
                 dataPoint: ['#990000', '#009900', '#000099', '#009999']
             }
         },
-        motorPulseWidth: {
-            yPropertyName: ['pulseWidthMotor0', 'pulseWidthMotor1', 'pulseWidthMotor2', 'pulseWidthMotor3'],
+        motorPowerLevels: {
+            yPropertyName: ['motorPowerLevel0', 'motorPowerLevel1', 'motorPowerLevel2', 'motorPowerLevel3'],
+            colors: {
+                dataLine: ['#990000', '#009900', '#000099', '#009999'],
+                dataPoint: ['#990000', '#009900', '#000099', '#009999']
+            }
+        },
+        motorPulseWidths: {
+            yPropertyName: ['motorPulseWidth0', 'motorPulseWidth1', 'motorPulseWidth2', 'motorPulseWidth3'],
             colors: {
                 dataLine: ['#990000', '#009900', '#000099', '#009999'],
                 dataPoint: ['#990000', '#009900', '#000099', '#009999']
@@ -160,7 +168,7 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
     this._flightControlsProvider = new FlightControlsProvider();
     this._flightControlsIntervalPeriod = 20; // In milliseconds
     this._flightControlsInterval = null;
-    this._debugFakeFlightControls = false;
+    this._debugFakeFlightControls = true;
 
     // Data transmitter objects
     this._flightControlsSender = null;
@@ -234,12 +242,14 @@ TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
     this._flightControlsSender = new FlightControlsSender(this._websocket);
     
     var getAndSendFlightControls = function() {
-         var flightControls = null;
-        this._flightControlsProvider.update();
-        if (this._flightControlsProvider.isGamepadConnected()) {
-            flightControls = this._flightControlsProvider.flightControls;
-        } else {
-            flightControls = new FlightControls();
+        var flightControls = null;
+
+        if ( !this._debugFakeFlightControls ) {
+            this._flightControlsProvider.update();
+            if (this._flightControlsProvider.isGamepadConnected()) {
+                flightControls = this._flightControlsProvider.flightControls;
+            } else {
+                flightControls = new FlightControls();
 
 // var n = performance.now();
 // if (n > gNextTime) {
@@ -250,18 +260,18 @@ TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
 // } else {
 //     flightControls.throttle = 0;
 // }
-
-            if ( this._debugFakeFlightControls ) {
-                var now = performance.now();
-                var t = Math.floor(now) % 1000 / 1000;
-                flightControls.throttle = Math.sin(Math.PI * 2 * t) / 2 + 0.5;
-                t = Math.floor(now) % 2300 / 2300;
-                flightControls.rudder = Math.sin(Math.PI * 2 * t) / 2;
-                t = Math.floor(now) % 1100 / 1100;
-                flightControls.elevators = Math.sin(Math.PI * 2 * t) / 2;
-                t = Math.floor(now) % 5000 / 5000;
-                flightControls.ailerons = Math.sin(Math.PI * 2 * t) / 2;
             }
+        } else {
+            flightControls = new FlightControls();
+            var now = performance.now();
+            var t = Math.floor(now) % 1000 / 1000;
+            flightControls.throttle = Math.sin(Math.PI * 2 * t) / 2 + 0.5;
+            t = Math.floor(now) % 2300 / 2300;
+            flightControls.rudder = Math.sin(Math.PI * 2 * t) / 2;
+            t = Math.floor(now) % 1100 / 1100;
+            flightControls.elevators = Math.sin(Math.PI * 2 * t) / 2;
+            t = Math.floor(now) % 5000 / 5000;
+            flightControls.ailerons = Math.sin(Math.PI * 2 * t) / 2;
         }
         this._flightControlsSender.send(flightControls);
     }.bind(this);

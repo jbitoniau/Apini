@@ -4,9 +4,8 @@ class FlightParameters
 {
 public:
     FlightParameters();
-    
-    float powerMotor0;  // [0..1]
-    float powerMotor1;
-    float powerMotor2;
-    float powerMotor3;
+
+    static const int numMotors = 4;
+    float motorPowerLevels[numMotors]; // [0..1]
+    float motorPulseWidths[numMotors]; // microseconds
 };

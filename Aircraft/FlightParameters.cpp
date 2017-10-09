@@ -1,9 +1,10 @@
 #include "FlightParameters.h"
 
-FlightParameters::FlightParameters() :
-    powerMotor0(0),
-    powerMotor1(0),
-    powerMotor2(0),
-    powerMotor3(0)
+FlightParameters::FlightParameters()
 {
+    for ( int i=0; i<numMotors; i++ ) 
+    {
+        motorPowerLevels[i] = 0;
+        motorPulseWidths[i] = 0;
+    }
 }

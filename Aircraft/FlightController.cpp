@@ -3,48 +3,51 @@
 #include <stdio.h>
 #include <cmath>
 
-FlightController::FlightController( unsigned int minPulseWidthInUs, unsigned int maxPulseWidthInUs ): 
-    mMinPulseWidthInUs(0),
-    mMaxPulseWidthInUs(0)
+FlightController::FlightController( unsigned int minPulseWidth, unsigned int maxPulseWidth ): 
+    mMinPulseWidth(0),
+    mMaxPulseWidth(0)
 {
-    if ( mMinPulseWidthInUs<=mMaxPulseWidthInUs )
+    if ( minPulseWidth<=maxPulseWidth )
     {
-        mMinPulseWidthInUs = minPulseWidthInUs;
-        mMaxPulseWidthInUs = maxPulseWidthInUs;
+        mMinPulseWidth = minPulseWidth;
+        mMaxPulseWidth = maxPulseWidth;
     }
     else
     {
-        mMinPulseWidthInUs = maxPulseWidthInUs;
-        mMaxPulseWidthInUs = minPulseWidthInUs;     
         printf("FlightController::FlightController: min and max pulse widths are the wrong way round. Values swapped\n");
+        mMinPulseWidth = maxPulseWidth;
+        mMaxPulseWidth = minPulseWidth;     
     }
 }
 
 FlightParameters FlightController::update( const FlightControls& flightControls, const SensorsSample& sensorsSample )
 {
     FlightParameters flightParameters;
-    // unsigned int pulseWidthRange = mMaxPulseWidthInUs - mMinPulseWidthInUs;     
-    // //float t = 0.f;      // goes to 0.5 maximum for now
-    // // if ( flightControls.throttle>0.5f ) 
-    // // {
-    // //     t = flightControls.throttle - 0.5f;
-    // // }
 
-    // // float e = 0.f;      // goes to 0.5 maximum for now
-    // // if ( flightControls.elevators>0.f ) 
-    // // {
-    // //     e = flightControls.elevators;       
-    // // }
+    for ( int i=0; i<flightParameters.numMotors; i++ ) 
+    {
+        flightParameters.motorPowerLevels[i] = 0;
+        flightParameters.motorPulseWidths[i] = mMinPulseWidth; 
+    }
 
-    // pulseWidthRange *= 0.4;
-
-    // flightParameters.pulseWidthMotor0 = mMinPulseWidthInUs + ( flightControls.throttle * pulseWidthRange );
-    // flightParameters.pulseWidthMotor1 = mMinPulseWidthInUs + ( (flightControls.elevators+0.5) * pulseWidthRange);
-    // flightParameters.pulseWidthMotor2 = mMinPulseWidthInUs; // + (0.2 * pulseWidthRange);
-    // flightParameters.pulseWidthMotor3 = mMinPulseWidthInUs; // + (0.4 * pulseWidthRange);
-
-    flightParameters.powerMotor0 = flightControls.throttle; 
-    //flightParameters.powerMotor1 = flightControls.elevators 
-
+    flightParameters.motorPulseWidths[0] = convertMotorPowerLevelToPulseWidth( flightControls.throttle );
     return flightParameters;
+}
+
+unsigned int FlightController::convertMotorPowerLevelToPulseWidth( float powerLevel ) const 
+{
+    if ( powerLevel<0 ) 
+    {
+        printf("FlightController::convertMotorPowerLevelToPulseWidth: power level is negative. Setting to 0\n");
+        powerLevel = 0;
+    } 
+    else if ( powerLevel>1 ) 
+    {
+        printf("FlightController::convertMotorPowerLevelToPulseWidth: power level is greater than 1. Setting to 1\n");
+        powerLevel = 1;
+    }
+
+    unsigned int pulseWidthRange = mMaxPulseWidth - mMinPulseWidth;
+    unsigned int pulseWidth = mMinPulseWidth + static_cast<unsigned int>( powerLevel * static_cast<float>(pulseWidthRange) ); 
+    return pulseWidth;
 }

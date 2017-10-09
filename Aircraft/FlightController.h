@@ -7,10 +7,14 @@
 class FlightController 
 {
 public:
-    FlightController( unsigned int minPulseWidthInUs, unsigned int maxPulseWidthInUs );
+    FlightController( unsigned int minPulseWidth, unsigned int maxPulseWidth );
     FlightParameters update( const FlightControls& flightControls, const SensorsSample& sensorsSample );
 
 private:
-    unsigned int mMinPulseWidthInUs;
-    unsigned int mMaxPulseWidthInUs;
+    unsigned int convertMotorPowerLevelToPulseWidth( float powerLevel ) const;
+
+    unsigned int mMinPulseWidth;
+    unsigned int mMaxPulseWidth;
 };
+
+
