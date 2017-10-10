@@ -15,7 +15,7 @@ private:
     static bool deserializeFlightControls( char* messageBuffer, unsigned int messageSize, FlightControls& flightControls );
 
     Loco::UDPSocket* socket;
-    const int bufferSize = 4*4;
+    const int bufferSize = 4*4  *2;  // x2 because the server sends a flight packet every 10ms and we receive only every 20ms
     char* buffer;
 
     const unsigned int localPort = 8081;
