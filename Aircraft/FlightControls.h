@@ -7,10 +7,10 @@ class FlightControls
 {
 public:
     FlightControls():
-        throttle(0.0),
-        rudder(0.0),
-        elevators(0.0),   
-        ailerons(0.0)
+        throttle(0.f),
+        rudder(0.f),
+        elevators(0.f),   
+        ailerons(0.f)
     {
     }
     

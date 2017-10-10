@@ -12,8 +12,6 @@ FlightControlsReceiver::FlightControlsReceiver()
     printf("FlightControlsReceiver: on port %d\n", localPort);
     buffer = new char[bufferSize];
     memset( buffer, 0, bufferSize );
-
-
 }
 
 FlightControlsReceiver::~FlightControlsReceiver()

@@ -7,5 +7,5 @@ public:
 
     static const int numMotors = 4;
     float motorPowerLevels[numMotors]; // [0..1]
-    float motorPulseWidths[numMotors]; // microseconds
+    unsigned int motorPulseWidths[numMotors]; // microseconds
 };

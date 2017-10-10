@@ -66,7 +66,7 @@ void Aircraft::run()
         if ( flightControlsReceiver.receive(flightControls) )
         {
             lastFlightControlsTimestamp = timestamp;
-            printf("throttle:%f rudder:%f elevators:%f ailerons:%f\n", flightControls.throttle, flightControls.rudder, flightControls.elevators, flightControls.ailerons);
+            //printf("throttle:%f rudder:%f elevators:%f ailerons:%f\n", flightControls.throttle, flightControls.rudder, flightControls.elevators, flightControls.ailerons);
         }
 
         if ( timestamp<=lastFlightControlsTimestamp+flightControlsTimeout )

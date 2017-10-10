@@ -24,13 +24,21 @@ FlightParameters FlightController::update( const FlightControls& flightControls,
 {
     FlightParameters flightParameters;
 
+    // Set motors to minimum
     for ( int i=0; i<flightParameters.numMotors; i++ ) 
     {
-        flightParameters.motorPowerLevels[i] = 0;
+        flightParameters.motorPowerLevels[i] = 0.f;
         flightParameters.motorPulseWidths[i] = mMinPulseWidth; 
     }
 
-    flightParameters.motorPulseWidths[0] = convertMotorPowerLevelToPulseWidth( flightControls.throttle );
+    // TEMP: map throttle to motor0 directly
+    flightParameters.motorPowerLevels[0] = flightControls.throttle;
+
+    // Set motor pulse widths from power levels
+    for ( int i=0; i<flightParameters.numMotors; i++ ) 
+    {
+        flightParameters.motorPulseWidths[i] = convertMotorPowerLevelToPulseWidth( flightParameters.motorPowerLevels[i] );
+    }
     return flightParameters;
 }
 
