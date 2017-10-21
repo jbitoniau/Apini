@@ -93,6 +93,17 @@ bool PWMGenerator::setPulseWidth( std::size_t channelIndex, unsigned int pulseWi
     24      P1-18
     25      P1-22
 */
+void PWMGeneratorGPIO_stop(int signum)  
+{
+    printf("PWMGenerator::PWMGenerator_stop!\n");
+    // for ( std::size_t i=0; i<mPulseWidths.size(); i++ )
+    // {
+    //     setPulseWidth( i, mMinPulseWidth );
+    // }
+    gpioTerminate();
+    exit(0);
+}
+
 PWMGeneratorGPIO::PWMGeneratorGPIO( unsigned int minPulseWidth, unsigned int maxPulseWidth, const std::vector<unsigned int>& channelGPIOs ):
     PWMGenerator(minPulseWidth, maxPulseWidth, channelGPIOs.size()),
     mChannelGPIOs(),
@@ -131,19 +142,6 @@ bool PWMGeneratorGPIO::internalSetPulseWidth( std::size_t channelIndex, unsigned
         return false;    
     }
     return true;
-}
-
-// !!!!!!!!!
-void PWMGeneratorGPIO_stop(int signum)  
-{
-    printf("PWMGenerator::PWMGenerator_stop!\n");
-    for ( std::size_t i=0; i<mPulseWidths.size(); i++ )
-    {
-        setPulseWidth( i, mMinPulseWidth );
-    }
-
-    gpioTerminate();
-    exit(0);
 }
 
 #endif
