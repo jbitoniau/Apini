@@ -3,6 +3,47 @@
 #include <stdio.h>
 #include <cmath>
 
+/*
+    PID
+
+    TODO:
+    - add derivative support
+*/  
+PIDController::PIDController( float proportionalTerm, float integralTerm, float maxIntegralOutput ):
+    mProportionalTerm(proportionalTerm),
+    mIntegralTerm(integralTerm),
+    mMaxIntegralOutput(maxIntegralOutput),
+    mIntegralOutput(0.f)
+{
+}
+
+float PIDController::update( float error, float deltaTime ) 
+{
+    // deltaTime should be >=0
+    float proportionalOutput = mProportionalTerm * error;
+    
+    mIntegralOutput = mIntegralOutput + (error * mIntegralTerm * deltaTime);
+    if ( mIntegralOutput < -mMaxIntegralOutput )  
+    {
+        mIntegralOutput = -mMaxIntegralOutput;
+    }
+    else if (mIntegralOutput > mMaxIntegralOutput) 
+    {
+        mIntegralOutput = mMaxIntegralOutput;
+    }
+
+    float output = proportionalOutput + mIntegralOutput;
+    return output;
+}
+    
+void PIDController::reset() 
+{
+    mIntegralOutput = 0.f;   
+}
+
+/*
+    FlightController
+*/
 FlightController::FlightController( unsigned int minPulseWidth, unsigned int maxPulseWidth ): 
     mMinPulseWidth(0),
     mMaxPulseWidth(0)
