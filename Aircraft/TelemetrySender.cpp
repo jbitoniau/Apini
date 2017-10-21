@@ -69,5 +69,8 @@ int TelemetrySender::serializeTelemetry( std::uint32_t timestamp, const FlightCo
         memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.motorPulseWidths[i]), int32Size ); offset+=int32Size;
     }
 
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.measuredRollSpeed), floatSize ); offset+=floatSize;
+    memcpy( buffer+offset, reinterpret_cast<const char*>(&flightParameters.targetRollSpeed), floatSize ); offset+=floatSize;
+
     return offset;
 }

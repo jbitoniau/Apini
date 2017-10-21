@@ -37,6 +37,17 @@ private:
 
     unsigned int mMinPulseWidth;
     unsigned int mMaxPulseWidth;
+    PIDController mRollPIDController;
+
+    template<typename T>    
+    static T clamp( T value, T min, T max )
+    {
+        if ( value>max )
+            return max;
+        else if ( value<min )
+            return min;
+        return value;
+    };
 };
 
 

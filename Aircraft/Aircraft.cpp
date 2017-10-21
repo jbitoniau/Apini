@@ -24,7 +24,7 @@ void Aircraft::run()
     FlightControlsReceiver flightControlsReceiver;
 
     // FlightController
-    FlightController flightController(1000, 1300);  // Set max pulse width output to 1300us for now...
+    FlightController flightController(1000, 1400);  // Set max pulse width output to 1300us for now...
 
     // PWMGenerator
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX

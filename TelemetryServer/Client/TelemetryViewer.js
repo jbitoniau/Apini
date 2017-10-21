@@ -42,13 +42,14 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
     this._graphDataWindow = { x: initialX, y: -5, width: initialWidth, height: 40 };
     this._graphDataWindows = {
         acceleration: { x: initialX, y: -4, width: initialWidth, height: 8 },
-        angularSpeed: { x: initialX, y: -1000, width: initialWidth, height: 2000 },
+        angularSpeed: { x: initialX, y: -45, width: initialWidth, height: 90 },
         magneticHeading: { x: initialX, y: -750, width: initialWidth, height: 1500 },
         temperature: { x: initialX, y: -5, width: initialWidth, height: 40 },
         pressure: { x: initialX, y: 1005, width: initialWidth, height: 20 },
         flightControls: { x: initialX, y: -0.7, width: initialWidth, height: 1.9 },
         motorPowerLevels: { x: initialX, y: -0.1, width: initialWidth, height: 1.2 },
-        motorPulseWidths: { x: initialX, y: 950, width: initialWidth, height: 1100 }
+        motorPulseWidths: { x: initialX, y: 950, width: initialWidth, height: 1100 },
+        rollSpeed: { x: initialX, y: -45, width: initialWidth, height: 90 }
     };
 
     this._graphDataTypeOptions = {
@@ -107,6 +108,13 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
                 dataLine: ['#990000', '#009900', '#000099', '#009999'],
                 dataPoint: ['#990000', '#009900', '#000099', '#009999']
             }
+        },
+        rollSpeed: {
+            yPropertyName: ['measuredRollSpeed', 'targetRollSpeed'],
+            colors: {
+                dataLine: ['#990000', '#009900'],
+                dataPoint: ['#990000', '#009900']
+            }
         }
     };
 
@@ -162,7 +170,7 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
 
     // The type of graph data currently being displayed
     this._graphDataType = null;
-    this.setGraphDataType('flightControls');
+    this.setGraphDataType('rollSpeed');
 
     // Flight controls
     this._flightControlsProvider = new FlightControlsProvider();

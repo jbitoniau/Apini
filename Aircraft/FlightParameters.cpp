@@ -1,6 +1,8 @@
 #include "FlightParameters.h"
 
-FlightParameters::FlightParameters()
+FlightParameters::FlightParameters():
+    measuredRollSpeed(0.f),
+    targetRollSpeed(0.f)
 {
     for ( int i=0; i<numMotors; i++ ) 
     {

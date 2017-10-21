@@ -70,6 +70,12 @@ TelemetryReceiver.prototype._onUDPSocketMessage = function(message, remote) {
         rudder: 0,
         elevators: 0,
         ailerons: 0,
+
+        // motorPowerLevel
+        // motorPulseWidth
+
+        measuredRollSpeed: 0,
+        targetRollSpeed: 0
     };
 
     for ( var i=0; i<numMotors; i++ ) {
@@ -129,6 +135,11 @@ TelemetryReceiver.prototype._onUDPSocketMessage = function(message, remote) {
         telemetrySample["motorPulseWidth"+i.toString()] = dataView.getUint32(offset, true);
         offset += 4;
     }
+
+    telemetrySample.measuredRollSpeed = dataView.getFloat32(offset, true);
+    offset += 4;
+    telemetrySample.targetRollSpeed = dataView.getFloat32(offset, true);
+    offset += 4;
 
     for (var i = 0; i < this._onTelemetrySampleReadyListeners.length; ++i) {
         var listener = this._onTelemetrySampleReadyListeners[i];
