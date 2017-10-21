@@ -168,7 +168,7 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
     this._flightControlsProvider = new FlightControlsProvider();
     this._flightControlsIntervalPeriod = 20; // In milliseconds
     this._flightControlsInterval = null;
-    this._debugFakeFlightControls = true;
+    this._debugFakeFlightControls = false;
 
     // Data transmitter objects
     this._flightControlsSender = null;
