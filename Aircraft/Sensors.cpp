@@ -34,7 +34,10 @@ double getGyroscopeHalfScaleRange( MPU6050& mpu6050 )
 }
 #endif
 
-Sensors::Sensors()
+Sensors::Sensors():
+    mGyroscopeConstantBiasX(0.0),
+    mGyroscopeConstantBiasY(0.0),
+    mGyroscopeConstantBiasZ(0.0)
 {
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     // MPU6050
@@ -57,6 +60,29 @@ Sensors::Sensors()
     ms561101ba->initialize();      // Note: this is costly on the MS5611-01BA. See if we can decrease the delay
     printf(ms561101ba->testConnection() ? "MS561101BA connection successful" : "MS561101BA connection failed");
 #endif
+
+    double sumX = 0.0;
+    double sumY = 0.0;
+    double sumZ = 0.0;
+    unsigned int numMeasures = 0;
+    unsigned int calibrationDuration = 1000;
+    SensorsSample sensorsSample;
+    int endTime = Loco::Time::getTimeAsMilliseconds() + calibrationDuration;
+    do
+    {
+        sensorsSample = getSensorsSample();
+        sumX += sensorsSample.angularSpeedX;
+        sumY += sensorsSample.angularSpeedY;
+        sumZ += sensorsSample.angularSpeedZ;
+        numMeasures++;
+    }
+    while (Loco::Time::getTimeAsMilliseconds()<endTime ); 
+    
+    double n = static_cast<double>(numMeasures);
+    mGyroscopeConstantBiasX = sumX/n;
+    mGyroscopeConstantBiasY = sumY/n;
+    mGyroscopeConstantBiasZ = sumZ/n;
+    printf("Gyroscope constant bias (deg/s): %0.4f %0.4f %0.4f (%d measures over %d ms)\n", mGyroscopeConstantBiasX, mGyroscopeConstantBiasY, mGyroscopeConstantBiasZ, numMeasures, calibrationDuration );
 }
 
 Sensors::~Sensors()
@@ -82,29 +108,30 @@ SensorsSample Sensors::getSensorsSample() const
     sensorsSample.accelerationX = static_cast<double>(ax) * accelerometerHalfScaleRange / 32768.0;
     sensorsSample.accelerationY = static_cast<double>(ay) * accelerometerHalfScaleRange / 32768.0;
     sensorsSample.accelerationZ = static_cast<double>(az) * accelerometerHalfScaleRange / 32768.0;
-    sensorsSample.angularSpeedX = static_cast<double>(gx) * gyroscopeHalfScaleRange / 32768.0;
-    sensorsSample.angularSpeedY = static_cast<double>(gy) * gyroscopeHalfScaleRange / 32768.0;
-    sensorsSample.angularSpeedZ = static_cast<double>(gz) * gyroscopeHalfScaleRange / 32768.0;
+    sensorsSample.angularSpeedX = static_cast<double>(gx) * gyroscopeHalfScaleRange / 32768.0 - mGyroscopeConstantBiasX;
+    sensorsSample.angularSpeedY = static_cast<double>(gy) * gyroscopeHalfScaleRange / 32768.0 - mGyroscopeConstantBiasY;
+    sensorsSample.angularSpeedZ = static_cast<double>(gz) * gyroscopeHalfScaleRange / 32768.0 - mGyroscopeConstantBiasZ;
 
     int16_t t = mpu6050->getTemperature();
     sensorsSample.temperature = static_cast<float>(t)/340.f + 36.53f;
         
     // HMC5883L
-    int16_t mx = 0;
-    int16_t my = 0;
-    int16_t mz = 0;
-    hmc5883l->getHeading(&mx, &my, &mz);                     // This takes 1 or 2 ms
-    sensorsSample.magneticHeadingX = static_cast<double>(mx);
-    sensorsSample.magneticHeadingY = static_cast<double>(my);
-    sensorsSample.magneticHeadingZ = static_cast<double>(mz);
+    // int16_t mx = 0;
+    // int16_t my = 0;
+    // int16_t mz = 0;
+    // hmc5883l->getHeading(&mx, &my, &mz);                     // This takes 1 or 2 ms
+    // sensorsSample.magneticHeadingX = static_cast<double>(mx);
+    // sensorsSample.magneticHeadingY = static_cast<double>(my);
+    // sensorsSample.magneticHeadingZ = static_cast<double>(mz);
 
-    // MS561101BA
-    float temperature = 0.f;            
-    float pressure = 0.f;
-    ms561101ba->readValues( &pressure, &temperature );       // This takes 4 or 5 ms
-    sensorsSample.temperature2 = temperature;
-    sensorsSample.pressure = pressure;
+    // // MS561101BA
+    // float temperature = 0.f;            
+    // float pressure = 0.f;
+    // ms561101ba->readValues( &pressure, &temperature );       // This takes 4 or 5 ms
+    // sensorsSample.temperature2 = temperature;
+    // sensorsSample.pressure = pressure;
 #endif
 
     return sensorsSample;
 }
+

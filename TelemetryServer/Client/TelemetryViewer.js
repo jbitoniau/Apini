@@ -42,14 +42,14 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
     this._graphDataWindow = { x: initialX, y: -5, width: initialWidth, height: 40 };
     this._graphDataWindows = {
         acceleration: { x: initialX, y: -4, width: initialWidth, height: 8 },
-        angularSpeed: { x: initialX, y: -45, width: initialWidth, height: 90 },
+        angularSpeed: { x: initialX, y: -50, width: initialWidth, height: 100 },
         magneticHeading: { x: initialX, y: -750, width: initialWidth, height: 1500 },
         temperature: { x: initialX, y: -5, width: initialWidth, height: 40 },
         pressure: { x: initialX, y: 1005, width: initialWidth, height: 20 },
         flightControls: { x: initialX, y: -0.7, width: initialWidth, height: 1.9 },
         motorPowerLevels: { x: initialX, y: -0.1, width: initialWidth, height: 1.2 },
         motorPulseWidths: { x: initialX, y: 950, width: initialWidth, height: 1100 },
-        rollSpeed: { x: initialX, y: -45, width: initialWidth, height: 90 }
+        rollSpeed: { x: initialX, y: -50, width: initialWidth, height: 100 }
     };
 
     this._graphDataTypeOptions = {

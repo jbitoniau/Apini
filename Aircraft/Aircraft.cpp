@@ -78,12 +78,12 @@ void Aircraft::run()
             //printf("!");
         }
 
-        // if ( timestamp<=lastFlightControlsTimestamp+flightControlsTimeout )
-        // {
-        //     // The aircraft is currently being controlled, so we update the flight controller
-        //     flightParameters = flightController.update( flightControls, sensorsSample );
-        // } 
-        // else 
+        if ( timestamp<=lastFlightControlsTimestamp+flightControlsTimeout )
+        {
+            // The aircraft is currently being controlled, so we update the flight controller
+            flightParameters = flightController.update( flightControls, sensorsSample );
+        } 
+        else 
         {
             // The aircraft is not being controlled, set motor pulse width to minimum
             for ( int i=0; i<FlightParameters::numMotors; i++ ) 

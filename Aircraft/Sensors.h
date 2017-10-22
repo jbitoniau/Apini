@@ -17,9 +17,14 @@ public:
     
     SensorsSample getSensorsSample() const;
 
+private:
 #if LOCO_PLATFORM == LOCO_PLATFORM_LINUX
     MPU6050*     mpu6050;
     HMC5883L*    hmc5883l;
     MS561101BA*  ms561101ba;
 #endif
+
+    double mGyroscopeConstantBiasX;
+    double mGyroscopeConstantBiasY;
+    double mGyroscopeConstantBiasZ;
 };

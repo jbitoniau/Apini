@@ -48,7 +48,7 @@ void PIDController::reset()
 FlightController::FlightController( unsigned int minPulseWidth, unsigned int maxPulseWidth ): 
     mMinPulseWidth(0),
     mMaxPulseWidth(0),
-    mRollPIDController(0.011f, 0.f, 0.f)   // proportionalTerm: motorPowerLevel per speed error (in degree per second)
+    mRollPIDController(0.015f, 0.f, 0.f)   // proportionalTerm: motorPowerLevel per speed error (in degree per second)
 {
     if ( minPulseWidth<=maxPulseWidth )
     {
