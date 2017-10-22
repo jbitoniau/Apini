@@ -383,6 +383,13 @@ GraphDataPresenter.dateAsLocal = false;
 GraphDataPresenter.timeSubdivisions = [
 	{
 		// 10ms
+		spacing: 1,
+		getText: function(value) {
+			return DateHelper.getFullTimeWithMillisecondsText(new Date(value), GraphDataPresenter.dateAsLocal);
+		}
+	},
+	{
+		// 10ms
 		spacing: 10,
 		getText: function(value) {
 			return DateHelper.getFullTimeWithMillisecondsText(new Date(value), GraphDataPresenter.dateAsLocal);
