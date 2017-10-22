@@ -43,12 +43,18 @@ void Aircraft::run()
 
     // Main loop
     printf("Aircraft started\n");
-    int framePeriod = 10;
+    int framePeriod = 20;
     int startTime = Loco::Time::getTimeAsMilliseconds();
+    startTime = ((startTime / 1000) + 1) * 1000;   // Round the start time to the next second and wait for it. This is to produce cleaner graph data. But this causes startup of the process to be a bit longer!
+    printf("startTime: %d\n", startTime );
+    while ( Loco::Time::getTimeAsMilliseconds()<startTime ) {
+        Loco::Thread::sleep( 1 );
+    } 
+
     int lastLoopIndex = static_cast<int>( std::floor( startTime/framePeriod) );
     std::uint32_t timestamp = 0;
     std::uint32_t lastFlightControlsTimestamp = 0;    
-    std::uint32_t flightControlsTimeout = 1000;
+    std::uint32_t flightControlsTimeout = 200;
 
     Sensors sensors;
     FlightControls flightControls;
@@ -67,14 +73,17 @@ void Aircraft::run()
         {
             lastFlightControlsTimestamp = timestamp;
             //printf("throttle:%f rudder:%f elevators:%f ailerons:%f\n", flightControls.throttle, flightControls.rudder, flightControls.elevators, flightControls.ailerons);
+        } else {
+            // flightControls = FlightControls();
+            //printf("!");
         }
 
-        if ( timestamp<=lastFlightControlsTimestamp+flightControlsTimeout )
-        {
-            // The aircraft is currently being controlled, so we update the flight controller
-            flightParameters = flightController.update( flightControls, sensorsSample );
-        } 
-        else 
+        // if ( timestamp<=lastFlightControlsTimestamp+flightControlsTimeout )
+        // {
+        //     // The aircraft is currently being controlled, so we update the flight controller
+        //     flightParameters = flightController.update( flightControls, sensorsSample );
+        // } 
+        // else 
         {
             // The aircraft is not being controlled, set motor pulse width to minimum
             for ( int i=0; i<FlightParameters::numMotors; i++ ) 
