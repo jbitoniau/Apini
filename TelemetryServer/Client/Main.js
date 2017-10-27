@@ -3,10 +3,14 @@
 function Main() {
 	var graphCanvas = document.getElementById('graphCanvas');
 	graphCanvas.focus();
-	var flightControlsCanvas = document.getElementById('flightControlsCanvas');
-	flightControlsCanvas.focus();
+	var flightControlsCanvas = document.getElementById('flightControlsDiv');
 	
-	var telemetryViewer = new TelemetryViewer(graphCanvas, flightControlsCanvas);
+	var parameterElements = {
+		pTermNumberInput: document.getElementById('pTerm'),
+		iTermNumberInput: document.getElementById('iTerm'),
+		dTermNumberInput: document.getElementById('dTerm')
+	};
+	var telemetryViewer = new TelemetryViewer(graphCanvas, flightControlsCanvas, parameterElements);
 
 	// Data types
 	var dataTypes = Object.keys(telemetryViewer._graphDataWindows);

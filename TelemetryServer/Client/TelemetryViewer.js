@@ -31,9 +31,9 @@
 /*
     TelemetryViewer
 */
-function TelemetryViewer(graphCanvas, flightControlsCanvas) {
+function TelemetryViewer(graphCanvas, flightControlsDiv, parameterElements ) {
     this._graphCanvas = graphCanvas;
-    this._flightControlsCanvas = flightControlsCanvas;
+    this._flightControlsDiv = flightControlsDiv;
 
     // Current and backed-up graph data windows for each type of data
     var now = new Date().getTime();
@@ -194,6 +194,64 @@ function TelemetryViewer(graphCanvas, flightControlsCanvas) {
     window.addEventListener('resize', this._onWindowResizeHandler);
     this._onWindowResize();
 
+    var createInputOnChangeHandler = function(event) {
+        if ( event.keyCode===13 ) {
+            console.log("AAA");
+        } 
+    };
+
+    var configureNumberInputElement = function( inputElement, onValueChanged ) {
+        var initialValue = null;
+        inputElement.addEventListener('focus', 
+            function(event) {
+                var value = parseFloat(event.target.value);
+                if ( !isNaN(value) ) {
+                    initialValue = value;
+                } else {
+                    event.target.value = 0;
+                    initialValue = 0;
+                }
+            }
+        );
+        inputElement.addEventListener('blur', 
+            function(event) {
+                var value = parseFloat(event.target.value);
+                if ( isNaN(value) ) {
+                    event.target.value = initialValue;
+                } else if ( value!==initialValue ) {
+                    if ( onValueChanged ) {
+                        onValueChanged(value);
+                    }
+                }
+            }
+        );
+        inputElement.addEventListener('keydown', 
+            function(event){
+                if ( event.keyCode===13 ) {
+                    var value = parseFloat(event.target.value);
+                    if ( isNaN(value) ) {
+                        event.target.value = initialValue;
+                    }
+                    else if ( value!==initialValue ) {
+                        if ( onValueChanged ) {
+                            onValueChanged(value);
+                            initialValue = value;
+                        }
+                    }
+                } 
+            } 
+        );
+    };
+
+    if ( parameterElements.pTerm ) {
+        var f = function(v) {
+            console.log("CHANGED: " + v );
+        };
+        configureNumberInputElement( parameterElements.pTermNumberInput, f );
+        configureNumberInputElement( parameterElements.iTermNumberInput, f );
+        configureNumberInputElement( parameterElements.dTermNumberInput, f );
+    }
+
     // Events
     this.onGraphDataTypeChanged = null;
     this.onAutoscrollChanged = null;
@@ -334,7 +392,7 @@ TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySample
     this._render();
 
     if (telemetrySamples.length > 0 && telemetrySamples[0].thisWebsocketProvidesFlightControls) {
-        this._flightControlsCanvas.style.display = 'block';
+        this._flightControlsDiv.style.display = 'flex';
         var flightControls = this._flightControlsProvider.flightControls;
 
         var options = null;
@@ -346,9 +404,11 @@ TelemetryViewer.prototype._onTelemetrySamplesReceived = function(telemetrySample
                 knobStrokeColor: '#9999FF'
             };
         }
-        FlightControlsPresenter.render(this._flightControlsCanvas, flightControls, options);
+
+        var canvas = this._flightControlsDiv.getElementsByTagName('canvas')[0];
+        FlightControlsPresenter.render(canvas, flightControls, options);
     } else {
-        this._flightControlsCanvas.style.display = 'none';
+        this._flightControlsDiv.style.display = 'none';
     }
 };
 

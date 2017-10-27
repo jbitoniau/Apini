@@ -89,8 +89,23 @@
 				</select>
 			</div>
 
-			<canvas id="flightControlsCanvas" style="display:none;position:absolute; bottom:5px; left:5px; width:300px; height:150px; background-color:white">
-			</canvas>
+			<div id="flightControlsDiv" style="display:none;flex-direction:row;position:absolute; bottom:5px; left:5px; width:380px; height:150px; background-color:white; border:1px solid lightgrey">
+				<canvas style="flex:0 0 300px"></canvas>
+				<div style="flex:1 1 auto;margin-top:8px;margin-bottom:8px;margin-left:2px;margin-right:8px;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch">
+					<div style="display:flex;flex-direction:row;justify-content:flex-start;align-items:stretch">
+						<div style="flex:0 0 15px">P</div>
+						<input id="pTermNumberInput" style="flex:1 1 auto" type="number" min="0" max="2" step="0.01" value="0.01"></input>
+					</div>
+					<div style="display:flex;flex-direction:row;justify-content:flex-start;align-items:stretch">
+						<div style="flex:0 0 15px">I</div>
+						<input id="iTermNumberInput" style="flex:1 1 auto" type="number" min="0" max="2" step="0.01" value="0"></input>
+					</div>
+					<div style="display:flex;flex-direction:row;justify-content:flex-start;align-items:stretch">
+						<div style="flex:0 0 15px">D</div>
+						<input id="dTermNumberInput" style="flex:1 1 auto" type="number" min="0" max="2" step="0.01" value="0"></input>
+					</div>
+				</div>
+			</div>
 
 			<div id="connectionIndicator" style="position:absolute; top:5px; right:5px; width:17px; height:17px; background-color:green">
 			</div>
