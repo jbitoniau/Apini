@@ -194,11 +194,11 @@ function TelemetryViewer(graphCanvas, flightControlsDiv, parameterElements ) {
     window.addEventListener('resize', this._onWindowResizeHandler);
     this._onWindowResize();
 
-    var createInputOnChangeHandler = function(event) {
-        if ( event.keyCode===13 ) {
-            console.log("AAA");
-        } 
-    };
+    // var createInputOnChangeHandler = function(event) {
+    //     if ( event.keyCode===13 ) {
+    //         console.log("AAA");
+    //     } 
+    // };
 
     var configureNumberInputElement = function( inputElement, onValueChanged ) {
         var initialValue = null;
@@ -243,14 +243,12 @@ function TelemetryViewer(graphCanvas, flightControlsDiv, parameterElements ) {
         );
     };
 
-    if ( parameterElements.pTerm ) {
-        var f = function(v) {
-            console.log("CHANGED: " + v );
-        };
-        configureNumberInputElement( parameterElements.pTermNumberInput, f );
-        configureNumberInputElement( parameterElements.iTermNumberInput, f );
-        configureNumberInputElement( parameterElements.dTermNumberInput, f );
-    }
+    var f = function(v) {
+        console.log("CHANGED: " + v );
+    };
+    configureNumberInputElement( parameterElements.pTermNumberInput, f );
+    configureNumberInputElement( parameterElements.iTermNumberInput, f );
+    configureNumberInputElement( parameterElements.dTermNumberInput, f );
 
     // Events
     this.onGraphDataTypeChanged = null;

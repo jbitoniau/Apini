@@ -6,9 +6,9 @@ function Main() {
 	var flightControlsCanvas = document.getElementById('flightControlsDiv');
 	
 	var parameterElements = {
-		pTermNumberInput: document.getElementById('pTerm'),
-		iTermNumberInput: document.getElementById('iTerm'),
-		dTermNumberInput: document.getElementById('dTerm')
+		pTermNumberInput: document.getElementById('pTermNumberInput'),
+		iTermNumberInput: document.getElementById('iTermNumberInput'),
+		dTermNumberInput: document.getElementById('dTermNumberInput')
 	};
 	var telemetryViewer = new TelemetryViewer(graphCanvas, flightControlsCanvas, parameterElements);
 
