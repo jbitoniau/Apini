@@ -20,6 +20,10 @@ Aircraft::Aircraft()
 
 void Aircraft::run()
 {
+    // unsigned int t = 671415020;
+    // float tt = t;
+    // printf("%d %f\n", t, tt );
+
     // FlightControlsReceiver
     FlightControlsReceiver flightControlsReceiver;
 
@@ -63,7 +67,8 @@ void Aircraft::run()
     while (true)
     {   
         timestamp = Loco::Time::getTimeAsMilliseconds();
-            
+        printf("Frame time: %d\n", timestamp );
+
         // Read sensors
         SensorsSample sensorsSample;
         sensorsSample = sensors.getSensorsSample();
@@ -81,11 +86,19 @@ void Aircraft::run()
 
         if ( timestamp<=lastFlightControlsTimestamp+flightControlsTimeout )
         {
+            if ( !flightController.isStarted() ) {
+                flightController.start();
+            }
+
             // The aircraft is currently being controlled, so we update the flight controller
             flightParameters = flightController.update( flightControls, sensorsSample );
         } 
         else 
         {
+            if ( flightController.isStarted() ) {
+                flightController.stop();
+            }
+
             // The aircraft is not being controlled, set motor pulse width to minimum
             for ( int i=0; i<FlightParameters::numMotors; i++ ) 
             {

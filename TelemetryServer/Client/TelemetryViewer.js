@@ -239,7 +239,7 @@ function TelemetryViewer(graphCanvas, flightControlsDiv, parameterElements ) {
     };
 
     this._pidTerms = new FlightControls();
-    this._pidTerms.pTerm = 0.01,
+    this._pidTerms.pTerm = 0.015,
     this._pidTerms.iTerm = 0.0,
     this._pidTerms.dTerm = 0.0,
 

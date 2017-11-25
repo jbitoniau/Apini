@@ -16,6 +16,13 @@ PIDController::PIDController( float proportionalTerm, float integralTerm, float 
     mMaxIntegralOutput(maxIntegralOutput),
     mIntegralOutput(0.f)
 {
+    // maxIntegralOutput should be >=0
+}
+
+void PIDController::setPID( float proportionalTerm, float integralTerm ) 
+{
+    mProportionalTerm = proportionalTerm;
+    mIntegralTerm = integralTerm;
 }
 
 float PIDController::update( float error, float deltaTime ) 
@@ -48,7 +55,9 @@ void PIDController::reset()
 FlightController::FlightController( unsigned int minPulseWidth, unsigned int maxPulseWidth ): 
     mMinPulseWidth(0),
     mMaxPulseWidth(0),
-    mRollPIDController(0.015f, 0.f, 0.f)   // proportionalTerm: motorPowerLevel per speed error (in degree per second)
+    mIsStarted(false),
+    mRollPIDController(0.015f, 0.f, 0.f),   // proportionalTerm: motorPowerLevel per speed error (in degree per second)
+    mLastTimeMs(0)       
 {
     if ( minPulseWidth<=maxPulseWidth )
     {
@@ -63,9 +72,40 @@ FlightController::FlightController( unsigned int minPulseWidth, unsigned int max
     }
 }
 
+void FlightController::start() {
+    if ( isStarted() ) {
+        printf("FlightController::start: already started");
+        return;
+    }
+    mIsStarted = true;
+    mLastTimeMs = 0;
+    mRollPIDController.reset();
+    printf("FlightController::start");
+}
+
+void FlightController::stop() {
+    if ( !isStarted() ) {
+        printf("FlightController::stop: already stopped");
+        return;
+    }
+    mIsStarted = false;
+    mLastTimeMs = 0;
+    mRollPIDController.reset();
+    printf("FlightController::stop");
+}
+
+bool FlightController::isStarted() const {
+    return mIsStarted;
+}
+
 FlightParameters FlightController::update( const FlightControls& flightControls, const SensorsSample& sensorsSample )
 {
     FlightParameters flightParameters;
+
+    if ( !isStarted() ) {
+        printf("FlightController::update: not started");
+        return flightParameters;
+    }
 
     // Set motors to minimum
     for ( int i=0; i<flightParameters.numMotors; i++ ) 
@@ -75,17 +115,29 @@ FlightParameters FlightController::update( const FlightControls& flightControls,
     }
     flightParameters.targetRollSpeed = 0;
     flightParameters.measuredRollSpeed = sensorsSample.angularSpeedX;
+  
+    // Calculate delta time
+    unsigned int timeMs = Loco::Time::getTimeAsMilliseconds();
+    if ( mLastTimeMs==0 ) {
+        printf("!");
+        mLastTimeMs = timeMs;
+    }
+    float deltaTime = static_cast<float>(timeMs - mLastTimeMs)/1000.f;
+    //printf("timeMs:%d lastTime:%d dt%f\n", timeMs, mLastTimeMs, deltaTime );
+    mLastTimeMs = timeMs;
 
     if ( flightControls.throttle>0.1 ) {
         float angularSpeedPerPerFlightControlUnit = 80;  // The angular speed in degrees per second that we want to achieve when control stick is at full extent
         flightParameters.targetRollSpeed = flightControls.ailerons * angularSpeedPerPerFlightControlUnit; // In degrees per second 
         flightParameters.measuredRollSpeed = sensorsSample.angularSpeedX;  // In degrees per second. Later there should transform+mapping somewhere to tell how gyro related to aircraf orientation
+       
         float errorRollSpeed = flightParameters.measuredRollSpeed - flightParameters.targetRollSpeed;
-        float time = Loco::Time::getTimeAsMilliseconds() / 1000;
-        float correctionMotorPowerLevel = mRollPIDController.update(errorRollSpeed, time);
+
+        float correctionMotorPowerLevel = mRollPIDController.update(errorRollSpeed, deltaTime);
+        
         flightParameters.motorPowerLevels[0] = clamp<float>( flightControls.throttle - correctionMotorPowerLevel, 0.f, 1.f );
         flightParameters.motorPowerLevels[1] = clamp<float>( flightControls.throttle + correctionMotorPowerLevel, 0.f, 1.f );
-        printf("tr:%f mr:%f err:%f corr:%f m0:%f m1:%f t:%f\n", flightParameters.targetRollSpeed, flightParameters.measuredRollSpeed, errorRollSpeed, correctionMotorPowerLevel, flightParameters.motorPowerLevels[0], flightParameters.motorPowerLevels[1], time); 
+        printf("tr:%f mr:%f err:%f corr:%f m0:%f m1:%f dt:%f\n", flightParameters.targetRollSpeed, flightParameters.measuredRollSpeed, errorRollSpeed, correctionMotorPowerLevel, flightParameters.motorPowerLevels[0], flightParameters.motorPowerLevels[1], deltaTime); 
     }
 
     // Set motor pulse widths from power levels
