@@ -73,6 +73,7 @@ void Aircraft::run()
         {
             lastFlightControlsTimestamp = timestamp;
             //printf("throttle:%f rudder:%f elevators:%f ailerons:%f\n", flightControls.throttle, flightControls.rudder, flightControls.elevators, flightControls.ailerons);
+           // printf("t:%d p:%f i:%f d:%f\n", Loco::Time::getTimeAsMilliseconds(), flightControls.pTerm, flightControls.iTerm, flightControls.dTerm);
         } else {
             // flightControls = FlightControls();
             //printf("!");

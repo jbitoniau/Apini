@@ -64,6 +64,7 @@ function TelemetryServer() {
                 this._flightControlsReceiver = new FlightControlsReceiver(websocketConnection);
                 this._flightControlsReceiver._onFlightControlsReceived = function(flightControls) {
                     this._flightControlsSender.send(flightControls);
+                    //console.log("p:" + flightControls.pTerm + " i:" + flightControls.iTerm + " d:" + flightControls.dTerm );
                 }.bind(this);
                 telemetrySender.thisWebsocketProvidesFlightControls = true;
             }

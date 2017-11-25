@@ -16,7 +16,7 @@ FlightControlsReceiver.prototype.dispose = function() {
 };
 
 FlightControlsReceiver.prototype._onWebsocketConnectionMessage = function(message) {
-    //console.log('FlightControlsReceiver: Received ' + message.type + ' message:' + message.utf8Data );
+   console.log('FlightControlsReceiver: Received ' + message.type + ' message:' + message.utf8Data );
     var jsonObject = JSON.parse(message.utf8Data);
 
     var flightControls = new FlightControls();

@@ -10,7 +10,10 @@ public:
         throttle(0.f),
         rudder(0.f),
         elevators(0.f),   
-        ailerons(0.f)
+        ailerons(0.f),
+        pTerm(0.f),
+        iTerm(0.f),
+        dTerm(0.f)
     {
     }
     
@@ -18,4 +21,8 @@ public:
     float rudder;       // [-0.5, 0.5]
     float elevators;    // [-0.5, 0.5]
     float ailerons;     // [-0.5, 0.5]
+
+    float pTerm;
+    float iTerm;
+    float dTerm;
 };

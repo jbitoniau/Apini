@@ -68,6 +68,54 @@ function FlightControls() {
             ailerons = value;
         }
     });
+
+    var pTerm = 0;
+    Object.defineProperty(this, 'pTerm', {
+        enumerable: true,
+        get: function() {
+            return pTerm;
+        },
+        set: function(value) {
+            if (typeof value !== 'number') throw new Error('Invalid argument');
+            if ( value<0 || value>1){
+                console.warn('FlightControls.pTerm: value is out of range');
+            }
+            value = MathExtra.clamp(value, 0, 1);
+            pTerm = value;
+        }
+    });
+
+    var iTerm = 0;
+    Object.defineProperty(this, 'iTerm', {
+        enumerable: true,
+        get: function() {
+            return iTerm;
+        },
+        set: function(value) {
+            if (typeof value !== 'number') throw new Error('Invalid argument');
+            if ( value<0 || value>1){
+                console.warn('FlightControls.iTerm: value is out of range');
+            }
+            value = MathExtra.clamp(value, 0, 1);
+            iTerm = value;
+        }
+    });
+
+    var dTerm = 0;
+    Object.defineProperty(this, 'dTerm', {
+        enumerable: true,
+        get: function() {
+            return dTerm;
+        },
+        set: function(value) {
+            if (typeof value !== 'number') throw new Error('Invalid argument');
+            if ( value<0 || value>1){
+                console.warn('FlightControls.dTerm: value is out of range');
+            }
+            value = MathExtra.clamp(value, 0, 1);
+            dTerm = value;
+        }
+    });
 }
 
 FlightControls.prototype.clear = function() {
@@ -75,6 +123,9 @@ FlightControls.prototype.clear = function() {
     this.rudder = 0;
     this.elevators = 0;
     this.ailerons = 0;
+    this.pTerm = 0;
+    this.iTerm = 0;
+    this.dTerm = 0;
 };
 
 // Copy the state of a given FlightControls object into this one
@@ -83,6 +134,9 @@ FlightControls.prototype.copy = function(other) {
     this.rudder = other.rudder;
     this.elevators = other.elevators;
     this.ailerons = other.ailerons;
+    this.pTerm = other.pTerm;
+    this.iTerm = other.iTerm;
+    this.dTerm = other.dTerm;
 };
 
 // Combines the state of a given FlightControls object into this one
@@ -93,6 +147,8 @@ FlightControls.prototype.combine = function(other) {
     this.rudder = MathExtra.clamp(this.rudder + other.rudder, -0.5, 0.5);
     this.elevators = MathExtra.clamp(this.elevators + other.elevators, -0.5, 0.5);
     this.ailerons = MathExtra.clamp(this.ailerons + other.ailerons, -0.5, 0.5);
+
+    // Don't touch pTerm, iTerm, etc...!
 };
 
 if ( typeof module!=="undefined" && ('exports' in module) ){

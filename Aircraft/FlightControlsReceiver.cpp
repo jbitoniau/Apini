@@ -37,6 +37,7 @@ bool FlightControlsReceiver::receive( FlightControls& flightControls )
     do 
     {
         numBytesReceived = socket->receive2( buffer, bufferSize, sourceAddress, sourcePort, errorCode );
+        //printf("numBytesReceived:%d\n", numBytesReceived);
         if ( numBytesReceived!=0 )
         {
             numPacketsReceived++;
@@ -55,7 +56,7 @@ bool FlightControlsReceiver::receive( FlightControls& flightControls )
     }
     while ( numBytesReceived!=0 && numPacketsReceived<maxNumPacketsReceived );
         
-    // printf("FlightControlsReceiver::receive: from:%s:%d (%d bytes): ", sourceAddress.c_str(), sourcePort, numBytesReceived);
+    //printf("FlightControlsReceiver::receive: from:%s:%d (%d bytes): ", sourceAddress.c_str(), sourcePort, numBytesReceived);
     // for ( int i=0; i<numBytesReceived; i++ )
     // {
     //     unsigned char c = buffer[i];
@@ -96,6 +97,13 @@ bool FlightControlsReceiver::deserializeFlightControls( char* buffer, unsigned i
     memcpy( reinterpret_cast<char*>(&flightControls.elevators), buffer+offset, floatSize ); 
     offset+=floatSize;
     memcpy( reinterpret_cast<char*>(&flightControls.ailerons), buffer+offset, floatSize ); 
+
+    offset+=floatSize;
+    memcpy( reinterpret_cast<char*>(&flightControls.pTerm), buffer+offset, floatSize ); 
+    offset+=floatSize;
+    memcpy( reinterpret_cast<char*>(&flightControls.iTerm), buffer+offset, floatSize ); 
+    offset+=floatSize;
+    memcpy( reinterpret_cast<char*>(&flightControls.dTerm), buffer+offset, floatSize ); 
   
     return true;
 }

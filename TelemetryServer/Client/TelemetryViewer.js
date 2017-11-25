@@ -194,11 +194,6 @@ function TelemetryViewer(graphCanvas, flightControlsDiv, parameterElements ) {
     window.addEventListener('resize', this._onWindowResizeHandler);
     this._onWindowResize();
 
-    // var createInputOnChangeHandler = function(event) {
-    //     if ( event.keyCode===13 ) {
-    //         console.log("AAA");
-    //     } 
-    // };
 
     var configureNumberInputElement = function( inputElement, onValueChanged ) {
         var initialValue = null;
@@ -243,12 +238,27 @@ function TelemetryViewer(graphCanvas, flightControlsDiv, parameterElements ) {
         );
     };
 
-    var f = function(v) {
-        console.log("CHANGED: " + v );
-    };
-    configureNumberInputElement( parameterElements.pTermNumberInput, f );
-    configureNumberInputElement( parameterElements.iTermNumberInput, f );
-    configureNumberInputElement( parameterElements.dTermNumberInput, f );
+    this._pidTerms = new FlightControls();
+    this._pidTerms.pTerm = 0.01,
+    this._pidTerms.iTerm = 0.0,
+    this._pidTerms.dTerm = 0.0,
+
+    parameterElements.pTermNumberInput.value = this._pidTerms.pTerm;
+    parameterElements.iTermNumberInput.value = this._pidTerms.iTerm;
+    parameterElements.dTermNumberInput.value = this._pidTerms.dTerm;
+
+    configureNumberInputElement( parameterElements.pTermNumberInput, function(value) { 
+        this._pidTerms.pTerm=value;
+        parameterElements.pTermNumberInput.value = this._pidTerms.pTerm;
+    }.bind(this));
+    configureNumberInputElement( parameterElements.iTermNumberInput, function(value) { 
+        this._pidTerms.iTerm=value;
+        parameterElements.iTermNumberInput.value = this._pidTerms.iTerm;
+    }.bind(this));
+    configureNumberInputElement( parameterElements.dTermNumberInput, function(value) { 
+        this._pidTerms.dTerm=value;
+        parameterElements.dTermNumberInput.value = this._pidTerms.dTerm;
+    }.bind(this));
 
     // Events
     this.onGraphDataTypeChanged = null;
@@ -337,6 +347,11 @@ TelemetryViewer.prototype._onSocketOpen = function(/*??*/) {
             t = Math.floor(now) % 5000 / 5000;
             flightControls.ailerons = Math.sin(Math.PI * 2 * t) / 2;
         }
+
+        flightControls.pTerm = this._pidTerms.pTerm;
+        flightControls.iTerm = this._pidTerms.iTerm;
+        flightControls.dTerm = this._pidTerms.dTerm;
+
         this._flightControlsSender.send(flightControls);
     }.bind(this);
 

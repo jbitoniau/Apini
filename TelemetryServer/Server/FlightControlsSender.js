@@ -46,6 +46,13 @@ FlightControlsSender.prototype.send = function(flightControls) {
     dataView.setFloat32(offset, flightControls.ailerons, true); 
     offset+=4;
 
+    dataView.setFloat32(offset, flightControls.pTerm, true); 
+    offset+=4;
+    dataView.setFloat32(offset, flightControls.iTerm, true); 
+    offset+=4;
+    dataView.setFloat32(offset, flightControls.dTerm, true); 
+    offset+=4;
+
     var buffer = toBuffer(uint8Array); //Buffer.from(uint8Array);       // There must be ways to avoid this copy here...
     this._udpSocket.send(buffer, 0, offset, this._remotePort, this._remoteAddress, function(err, bytes) {
         if (err) {
@@ -55,7 +62,7 @@ FlightControlsSender.prototype.send = function(flightControls) {
     });
 
     // console.log('FlightControlsSender: to ' + this._remoteAddress + ':' + this._remotePort + ": " +
-    //     FlightControlsSender._uint8ArrayAsHexString(uint8Array, offset) + " - " + JSON.stringify(flightControls));
+    //    FlightControlsSender._uint8ArrayAsHexString(uint8Array, offset) + " - " + JSON.stringify(flightControls));
 };
 
 FlightControlsSender._uint8ArrayAsHexString = function( uint8Array, length ){
